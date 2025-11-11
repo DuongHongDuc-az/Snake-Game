@@ -1,2 +1,2 @@
 # Snake Game
-![GNATT] (images/Gnatt_Chart.png)
+![GNATT] (images/Gnatt_Chart.png)gi
