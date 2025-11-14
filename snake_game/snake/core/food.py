@@ -1,6 +1,6 @@
 import random
 import pygame
-from snake.settings import CELL_SIZE,RED
+from snake_game.snake.settings import CELL_SIZE, FOOD_COLOR
 
 class Food:
     def __init__(self, width, height):
@@ -14,4 +14,5 @@ class Food:
         return (x, y)
 
     def draw(self, surface):
-        pygame.draw.rect(surface, RED, (*self.position, CELL_SIZE, CELL_SIZE))
+        pygame.draw.rect(surface, FOOD_COLOR, (*self.position, CELL_SIZE, CELL_SIZE))
+
