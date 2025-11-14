@@ -1,11 +1,14 @@
+
 import random
 import pygame
-from snake_game.snake.settings import CELL_SIZE, FOOD_COLOR
+from snake.settings import CELL_SIZE, FOOD_COLOR
 
 class Food:
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.image = pygame.image.load("snake/images/food.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.position = self.random_pos()
 
     def random_pos(self):
@@ -14,5 +17,4 @@ class Food:
         return (x, y)
 
     def draw(self, surface):
-        pygame.draw.rect(surface, FOOD_COLOR, (*self.position, CELL_SIZE, CELL_SIZE))
-
+        surface.blit(self.image, self.position)
