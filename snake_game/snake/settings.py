@@ -7,3 +7,4 @@ SNAKE_COLOR = (0, 255, 0)
 FOOD_COLOR = (255, 0, 0)
 FONT_NAME = 'Arial'
 CELL_SIZE = 20
+FOOD_IMAGES = ["apple.png", "grape.png", "orange.png"]

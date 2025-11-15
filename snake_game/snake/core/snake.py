@@ -1,11 +1,13 @@
-import pygame
-from snake_game.snake.settings import CELL_SIZE, SNAKE_COLOR
-
+﻿import pygame
+from snake.settings import CELL_SIZE
+from snake.skin import SkinManager
 class Snake:
-    def __init__(self):
+    def __init__(self,skin_manager):
         self.body = [[100, 40], [80, 40], [60, 40]]
         self.direction = "RIGHT"
         self.grow_flag = False
+        self.skin_manager = skin_manager
+
 
     def change_direction(self, new_direction):
         opposite = {"UP": "DOWN", "DOWN": "UP", "LEFT": "RIGHT", "RIGHT": "LEFT"}
@@ -34,9 +36,22 @@ class Snake:
     def grow(self):
         self.grow_flag = True
 
+    
     def draw(self, screen):
-        for pos in self.body:
-            pygame.draw.rect(screen, SNAKE_COLOR, pygame.Rect(pos[0], pos[1], CELL_SIZE, CELL_SIZE))
+        for i, pos in enumerate(self.body):
+            if i == 0:
+                rotated_head = self.skin_manager.head_img
+                if self.direction == "UP":
+                    rotated_head = pygame.transform.rotate(rotated_head, 90)
+                elif self.direction == "DOWN":
+                    rotated_head = pygame.transform.rotate(rotated_head, -90)
+                elif self.direction == "LEFT":
+                    rotated_head = pygame.transform.rotate(rotated_head, 180)
+                screen.blit(rotated_head, pos)
+            else:
+                screen.blit(self.skin_manager.body_img, pos)
+
+
 
     def get_head_pos(self):
         return tuple(self.body[0])

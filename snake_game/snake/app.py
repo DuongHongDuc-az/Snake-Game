@@ -1,10 +1,10 @@
 import pygame
 import sys
 import random
-from   snake_game.snake.core.snake import Snake
-from   snake_game.snake.core.food import Food
-from   snake_game.snake.settings import CELL_SIZE
-
+from   snake.core.snake import Snake
+from   snake.core.food import Food,FoodManager
+from   snake.settings import CELL_SIZE
+from   snake.skin import SkinManager  
 class Game:
     def __init__(self):
         pygame.init()
@@ -14,8 +14,10 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.running = True
-        self.snake = Snake()
-        self.food = Food(self.width, self.height)
+        self.skin_manager = SkinManager("Basic_purple")
+        self.snake = Snake(self.skin_manager)
+        self.random_food = FoodManager()
+        self.food = Food(self.width, self.height,self.random_food)
         self.score = 0
 
     def handle_events(self):
@@ -36,6 +38,7 @@ class Game:
         self.snake.move()
         if self.snake.get_head_pos() == self.food.position:
             self.snake.grow()
+            self.food.image = random.choice(self.random_food.images)
             self.food.position = self.food.random_pos()
             self.score += 1
             return
