@@ -19,7 +19,12 @@ class Game:
         self.random_food = FoodManager()
         self.food = Food(self.width, self.height,self.random_food)
         self.score = 0
-
+        self.reset()
+    def reset(self):
+        self.snake = Snake(self.skin_manager)
+        self.food = Food(self.width, self.height, self.random_food)
+        self.score = 0
+        self.game_over = False
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -35,6 +40,9 @@ class Game:
                     self.snake.change_direction("RIGHT")
 
     def update(self):
+        if self.game_over:
+            self.manager.switch_scene('intro')
+            return
         self.snake.move()
         if self.snake.get_head_pos() == self.food.position:
             self.snake.grow()
@@ -55,17 +63,29 @@ class Game:
         self.screen.blit(score_text, (10, 10))
         pygame.display.flip()
 
+class SceneManager:
+    def add_scene(self, name, scene):
+        self.scenes = {}
+        self.current_scene = None
+        self.current_scene_name = None
+    def add_scene(self, name, scene):
+        self.scenes[name] = scene
+    def switch_scene(self, name):
+        self.current_scene = self.scenes.get(name)
+        if name == 'board' and hasattr(self.current_scene, 'reset'):
+            self.current_scene.reset()
     def run(self):
         while self.running:
             self.handle_events()
             self.update()
             self.draw()
             self.clock.tick(15)
+            if self.current_scene:
+                self.current_scene.handle_events()
+                self.current_scene.update()
+                self.current_scene.draw()   
         pygame.quit()
         sys.exit()
-
 if __name__ == "__main__":
     game = Game()
     game.run()
-
-            
