@@ -8,3 +8,6 @@ FOOD_COLOR = (255, 0, 0)
 FONT_NAME = 'Arial'
 CELL_SIZE = 20
 FOOD_IMAGES = ["apple.png", "grape.png", "orange.png"]
+play_pos= ((400,350))
+option_pos=((400,420))
+exit_pos=((400,490))
