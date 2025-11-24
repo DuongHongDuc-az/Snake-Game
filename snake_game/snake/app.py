@@ -1,10 +1,10 @@
 import pygame
 import sys
 import random
-from   snake.core.snake import Snake
-from   snake.core.food import Food,FoodManager
-from   snake.settings import CELL_SIZE
-from   snake.skin import SkinManager  
+from   snake.core.snake    import Snake
+from   snake.core.food     import Food,FoodManager
+from   snake.settings      import CELL_SIZE
+from   snake.skin          import SkinManager  
 class Game:
     def __init__(self):
         pygame.init()
@@ -20,6 +20,7 @@ class Game:
         self.food = Food(self.width, self.height,self.random_food)
         self.score = 0
         self.reset()
+       
     def reset(self):
         self.snake = Snake(self.skin_manager)
         self.food = Food(self.width, self.height, self.random_food)
@@ -63,27 +64,14 @@ class Game:
         self.screen.blit(score_text, (10, 10))
         pygame.display.flip()
 
-class SceneManager:
-    def add_scene(self, name, scene):
-        self.scenes = {}
-        self.current_scene = None
-        self.current_scene_name = None
-    def add_scene(self, name, scene):
-        self.scenes[name] = scene
-    def switch_scene(self, name):
-        self.current_scene = self.scenes.get(name)
-        if name == 'board' and hasattr(self.current_scene, 'reset'):
-            self.current_scene.reset()
+
     def run(self):
         while self.running:
             self.handle_events()
             self.update()
             self.draw()
             self.clock.tick(15)
-            if self.current_scene:
-                self.current_scene.handle_events()
-                self.current_scene.update()
-                self.current_scene.draw()   
+
         pygame.quit()
         sys.exit()
 if __name__ == "__main__":
