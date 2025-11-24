@@ -5,31 +5,35 @@ import math
 
 SCREEN_W = 1280
 SCREEN_H = 720
-width_btn = 213
-height_btn = 67
+width_btn_hcn = 230
+height_btn_hcn= 80
 pos_star =((320,450))
 pos_option =((320,550))
 pos_exit = ((320,650))
 class Button:
-    def __init__(self, pos, button_name):
+    def __init__(self, pos, button_name,width,height):
         base_path = f"snake/images/scence_images/{button_name}.png"
-        self.image = pygame.transform.smoothscale(pygame.image.load(base_path).convert_alpha(), (width_btn ,height_btn))
-        self.rect = self.image.get_rect(center=pos)
+        self.image_normal = pygame.transform.smoothscale(pygame.image.load(base_path).convert_alpha(), (width ,height))
+        self.image_big    = pygame.transform.smoothscale(pygame.image.load(base_path).convert_alpha(), (int(width*1.10) ,int(height*1.10)))
+        self.rect         = self.image_normal.get_rect(center=pos)
+        self.width        = width
+        self.height       = height
+        self.hover        = False
+    
+    def is_hover(self):## dùng để nhận biết vơ chuột
+        self.hover = self.rect.collidepoint(pygame.mouse.get_pos())
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
-       
-    def is_hover(self):## dùng để nhận biết vơ chuột
-        return self.rect.collidepoint(pygame.mouse.get_pos())
-
+        if self.hover :
+            img = self.image_big
+            rect = img.get_rect(center=self.rect.center)
+            screen.blit(img,rect)
+            
+        else :
+            screen.blit(self.image_normal, self.rect)
     def is_clicked(self, event):## dùng để nhận biết click chuột
         return event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos)
     
-    def re_draw(self, screen):##khi kéo chuột tới thì sẽ phóng to nút bấm 
-    # Scale ảnh lớn hơn 5%
-       hover_img = pygame.transform.smoothscale(self.image, (int(width_btn * 1.10), int(height_btn * 1.05)))
-       hover_rect = hover_img.get_rect(center=self.rect.center)
-       screen.blit(hover_img, hover_rect)
 
 
 
@@ -128,9 +132,9 @@ class UI_Menu:
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
         self.bg = Background_Menu()
-        self.btn_star   = Button(pos_star,"btn_star")
-        self.btn_option = Button(pos_option,"btn_option")
-        self.btn_exit   = Button((pos_exit),"btn_exit")
+        self.btn_star   = Button(pos_star,"btn_star",width_btn_hcn,height_btn_hcn)
+        self.btn_option = Button(pos_option,"btn_option",width_btn_hcn,height_btn_hcn)
+        self.btn_exit   = Button((pos_exit),"btn_exit",width_btn_hcn,height_btn_hcn)
         self.running    = True
         self.clock      = pygame.time.Clock()  
         self.t          = 0.0
@@ -139,25 +143,33 @@ class UI_Menu:
                self.dt = self.clock.tick(60)/1000.0
                self.t += self.dt
                self.bg.draw(self.screen,self.t)
+
+               self.btn_star.is_hover()
+               self.btn_option.is_hover()
+               self.btn_exit.is_hover()
+
+
+
                self.btn_star.draw(self.screen)
                self.btn_option.draw(self.screen)
                self.btn_exit.draw(self.screen)
+
+
+
                for event in pygame.event.get():
                   if event.type == pygame.QUIT:
                     self.running = False
                   if self.btn_star.is_clicked(event):
                     print ("Star")
-                  if self.btn_star.is_hover():
-                    self.btn_star.re_draw(self.screen)
                   if self.btn_option.is_clicked(event):
                     print ("option")
-                  if self.btn_option.is_hover():
-                    self.btn_option.re_draw(self.screen)
                   if self.btn_exit.is_clicked(event):
                     print ("Exit")
-                  if self.btn_exit.is_hover():
-                    self.btn_exit.re_draw(self.screen)
-               pygame.display.update()
+                    return 
+                  
+                   
+                   
+               pygame.display.flip()
                
     
 
