@@ -75,22 +75,29 @@ class BackgroundLayer:
         screen.blit(rotated, (x, y))
 
 
-class SnakeBlink:
+class Snake_effect:
     def __init__(self, scale=0.90):
         base_path = f"snake/images/scence_images/"
         p_open   = pygame.image.load(base_path+"bg_1.on.png")
         p_closed = pygame.image.load(base_path+"bg_1.off.png")
+        p_tongue = pygame.image.load(base_path+"bg_1.tongue.png")
         self.open   = pygame.transform.smoothscale(p_open.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
         self.closed = pygame.transform.smoothscale(p_closed.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
+        self.tongue = pygame.transform.smoothscale(p_tongue.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
         # đặt mép phải, hơi lệch vào trong màn hình
-        self.pos = (SCREEN_W - self.open.get_width() + int(SCREEN_W*0.02),
-                    SCREEN_H - self.open.get_height() + int(SCREEN_H*0.02))
-        self.BLINK_PERIOD = 3.0  # mỗi 5s
+        self.pos = (SCREEN_W - self.open.get_width() + int(SCREEN_W*0.02),SCREEN_H - self.open.get_height() + int(SCREEN_H*0.02))
+        self.BLINK_PERIOD = 5.0  # mỗi 5s
         self.BLINK_LEN    = 0.12 # nhắm 120ms
-
+        self.TONGUE_PERIOD = 3.0  # mỗi 3s
+        self.TONGUE_LEN    = 0.3  # lè lưỡi 300ms
     def draw(self, screen, t):
         blink_phase = (t % self.BLINK_PERIOD)
-        img = self.closed if blink_phase < self.BLINK_LEN else self.open
+        tongue_phase = (t % self.TONGUE_PERIOD)
+        img = self.open
+        if blink_phase < self.BLINK_LEN :
+            img = self.closed
+        if tongue_phase < self.TONGUE_LEN:
+            img =self.tongue
         screen.blit(img, self.pos)
 
 
@@ -103,7 +110,7 @@ class Background_Menu:
        
         self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0,period=3.0, pulse=0.06, pulse_period=8.0)
        
-        self.snake = SnakeBlink(scale=0.90)
+        self.snake = Snake_effect(scale=0.90)
 
     def draw(self, screen, t):
         # vẽ theo thứ tự: nền -> ánh sáng -> rắn -> tiêu đề
