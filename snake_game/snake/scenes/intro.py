@@ -10,10 +10,12 @@ height_btn= 80
 pos_star =((320,450))
 pos_option =((320,550))
 pos_exit = ((320,650))
-pos_undo =((50,50))
-pos_player =((640,320))
-pos_bot = ((640,420))
+pos_undo =((80,80))
+pos_player =((640,270))
+pos_bot = ((640,370))
+pos_rule = ((640,470))
 pos_color =((1180,600))
+
 class Button:
     def __init__(self, pos, button_name,width,height):
         base_path = f"snake/images/scenes_images/{button_name}.png"
@@ -23,7 +25,7 @@ class Button:
         self.width        = width
         self.height       = height
         self.hover        = False
-    
+
     def is_hover(self):## dùng để nhận biết vơ chuột
         self.hover = self.rect.collidepoint(pygame.mouse.get_pos())
 
@@ -33,8 +35,8 @@ class Button:
             rect = img.get_rect(center=self.rect.center)
             screen.blit(img,rect)
             
-        else :
-            screen.blit(self.image_normal, self.rect)
+        else : screen.blit(self.image_normal, self.rect)
+        
     def is_clicked(self, event):## dùng để nhận biết click chuột
         return event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos)
     
@@ -111,90 +113,94 @@ class Snake_effect:
 
 class Background_Menu1:
     def __init__(self):
-        
         self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
-       
-       
-       
         self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0,period=6.0, pulse=0.04, pulse_period=10.0)
-       
-        self.snake = Snake_effect(scale=0.90)
-
+        self.snake = Snake_effect(scale=1.0)
     def draw(self, screen, t):
-        # vẽ theo thứ tự: nền -> ánh sáng -> rắn -> tiêu đề
         self.base.draw(screen, t)
-        
         self.snake.draw(screen, t)
         self.title.draw(screen, t)
 
 class Background_Menu2:
     def __init__(self):
         self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
-        self.board = BackgroundLayer("bg_2.board",use_alpha=True,period =10.0)
+        self.board = BackgroundLayer("bg_2.board",use_alpha=True)
     def draw(self,screen,t):
         self.base.draw(screen,t)
         self.board.draw(screen,t)
-class UI_Menu2:
+
+class Background_Rule:
     def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
-        self.bg = Background_Menu2()
+        self.base =  BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.rule =  BackgroundLayer("rule", use_alpha=True  )
+    def draw(self,screen,t):
+        self.base.draw(screen,t)
+        self.rule.draw(screen,t)
+
+
+
+class Button_Menu1:
+    def __init__(self):
+        self.btn_start   = Button(pos_star,"btn_start",width_btn,height_btn)
+        self.btn_option = Button(pos_option,"btn_option",width_btn,height_btn)
+        self.btn_exit   = Button(pos_exit,"btn_exit",width_btn,height_btn)
+    def is_hover(self):
+        self.btn_start.is_hover()
+        self.btn_option.is_hover()
+        self.btn_exit.is_hover()
+    def draw(self,screen):
+        self.btn_start.draw(screen)
+        self.btn_option.draw(screen)
+        self.btn_exit.draw(screen)
+    def is_clicked(self,event):
+        if self.btn_start.is_clicked(event):return "start"
+        if self.btn_option.is_clicked(event):return "option"
+        if self.btn_exit.is_clicked(event):return "exit"
+
+class Button_Menu2:
+    def __init__(self):
         self.btn_color=Button(pos_color,"btn_color",height_btn+70,height_btn+70)
         self.btn_undo=Button(pos_undo,"btn_undo",height_btn+20,height_btn+20)
         self.btn_player=Button(pos_player,"btn_player",width_btn,height_btn)
         self.btn_bot=Button(pos_bot,"btn_bot",width_btn,height_btn)
-        self.running    = True
-        self.clock      = pygame.time.Clock()  
-        self.t          = 0.0
+        self.btn_rule = Button(pos_rule,"btn_rule",width_btn,height_btn)
+    def is_hover(self):
+        self.btn_color.is_hover()
+        self.btn_bot.is_hover()
+        self.btn_player.is_hover()
+        self.btn_rule.is_hover()
+        self.btn_undo.is_hover()
+    def draw(self,screen):
+        self.btn_color.draw(screen)
+        self.btn_bot.draw(screen)
+        self.btn_player.draw(screen)
+        self.btn_rule.draw(screen)
+        self.btn_undo.draw(screen)
+    def is_clicked(self,event):
+        if self.btn_color.is_clicked(event):return "color"
+        if self.btn_bot.is_clicked(event):return "ai"
+        if self.btn_player.is_clicked(event):return "player"
+        if self.btn_rule.is_clicked(event):return "rule"
+        if self.btn_undo.is_clicked(event):return "undo1"
 
-    def run(self):
-            while self.running:
-               self.dt = self.clock.tick(60)/1000.0
-               self.t += self.dt
-               self.bg.draw(self.screen,self.t)
-
-               self.btn_player.is_hover()
-               self.btn_color.is_hover()
-               self.btn_undo.is_hover()
-               self.btn_bot.is_hover()
-
-
-               self.btn_player.draw(self.screen)
-               self.btn_bot.draw(self.screen)
-               self.btn_color.draw(self.screen)
-               self.btn_undo.draw(self.screen)
-
-
-               for event in pygame.event.get():
-                  if event.type == pygame.QUIT:
-                    self.running = False
-                  if self.btn_player.is_clicked(event):
-                    print ("Player")
-                  if self.btn_bot.is_clicked(event):
-                    print ("Bot")
-                  if self.btn_color.is_clicked(event):
-                    print ("Color")
-                  if self.btn_undo.is_clicked(event):
-                    print("Undo")
-                    return "back"
-                    
-                  
-                   
-                   
-               pygame.display.flip()
+class Button_Rule:
+    def __init__(self):
+        self.btn_undo=Button(pos_undo,"btn_undo",height_btn+20,height_btn+20)
+    def is_hover(self):
+        self.btn_undo.is_hover()
+    def draw(self,screen):
+        self.btn_undo.draw(screen)
+    def is_clicked(self,event):
+        if self.btn_undo.is_clicked(event):return "undo2"
 
 
 
-
-
-class UI_Menu1:
+class UI_Menu1:#giao diện vào game
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
         self.bg = Background_Menu1()
-        self.btn_star   = Button(pos_star,"btn_start",width_btn,height_btn)
-        self.btn_option = Button(pos_option,"btn_option",width_btn,height_btn)
-        self.btn_exit   = Button((pos_exit),"btn_exit",width_btn,height_btn)
+        self.btn = Button_Menu1()
         self.running    = True
         self.clock      = pygame.time.Clock()  
         self.t          = 0.0
@@ -204,49 +210,100 @@ class UI_Menu1:
                self.t += self.dt
                self.bg.draw(self.screen,self.t)
 
-               self.btn_star.is_hover()
-               self.btn_option.is_hover()
-               self.btn_exit.is_hover()
-
-
-
-               self.btn_star.draw(self.screen)
-               self.btn_option.draw(self.screen)
-               self.btn_exit.draw(self.screen)
-
-
+               self.btn.is_hover()
+               self.btn.draw(self.screen)
 
                for event in pygame.event.get():
                   if event.type == pygame.QUIT:
-                    self.running = False
-                  if self.btn_star.is_clicked(event):
-                    print ("Star")
-                    return "start"
-                  if self.btn_option.is_clicked(event):
-                    print ("option")
-                  if self.btn_exit.is_clicked(event):
-                    print ("Exit")
-                    return "exit"
-                  
-                   
-                   
+                     self.running = False
+                  if self.btn.is_clicked(event):
+                     return self.btn.is_clicked(event)
+  
                pygame.display.flip()
                
     
+class UI_Menu2:#giao diện chọn chế độ chơi và skin
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
+        self.bg = Background_Menu2()
+        self.btn = Button_Menu2()
+        self.running    = True
+        self.clock      = pygame.time.Clock()  
+        self.t          = 0.0
 
-    
-if __name__ == "__main__":
-    running = True
-    menu1 = UI_Menu1()
-    menu2 = UI_Menu2()
-    while running:
-        result = menu1.run()
-        if result == "start":
-          
-            result = menu2.run()
-            if result == "back":
-                continue
+    def run(self):
+            while self.running:
+               self.dt = self.clock.tick(60)/1000.0
+               self.t += self.dt
+               self.bg.draw(self.screen,self.t)
+               self.btn.is_hover()
+               self.btn.draw(self.screen)
+             
+               for event in pygame.event.get():
+                  if event.type == pygame.QUIT:
+                    self.running = False
+                  if self.btn.is_clicked(event):
+                    return self.btn.is_clicked(event)
+                  
+               pygame.display.flip()
+
+class UI_Rule:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
+        self.bg = Background_Rule()
+        self.btn = Button_Rule()
+        self.clock = pygame.time.Clock()
+        self.t =0.0
+        self.running =True
+    def run(self):
+        while self.running:
+            self.dt = self.clock.tick(60)/1000.0
+            self.t +=self.dt
+            self.bg.draw(self.screen,self.t)
+            self.btn.is_hover()
+            self.btn.draw(self.screen)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                if self.btn.is_clicked(event):
+                    return self.btn.is_clicked(event)
+            pygame.display.flip()
+
+
+class UI_Manager:
+    def __init__(self):
+        self.menus = {
+            "menu1": UI_Menu1(),
+            "menu2": UI_Menu2(),
+            "rule": UI_Rule(),          
+        }
+        self.current = "menu1"
+
+        # Map kết quả trả về → giao diện tiếp theo
+        self.transitions = {
+            "start": "menu2",
+            "rule": "rule",
+            "undo1": "menu1",
+            "undo2":"menu2"
+        }
+
+    def run(self):
+        result = self.menus[self.current].run()
         if result == "exit":
-            running = False
-pygame.quit()
-sys.exit()
+            pygame.quit()
+            sys.exit()
+        elif result in self.transitions:
+            self.current = self.transitions[result]
+
+       
+
+if __name__ == "__main__":
+   
+ manager = UI_Manager()
+ while True:
+    manager.run()
+
+           
+       
