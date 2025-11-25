@@ -108,18 +108,18 @@ class Snake_effect:
 class Background_Menu:
     def __init__(self):
         
-        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.0, rot_deg=0, period=12.0)
+        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
        
-        self.sunny = BackgroundLayer("bg_1.sunny", use_alpha=True,xoay = True ,scale_factor=1.75, rot_deg=360.0, period=50.0)
        
-        self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0,period=3.0, pulse=0.06, pulse_period=8.0)
+       
+        self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0,period=6.0, pulse=0.04, pulse_period=10.0)
        
         self.snake = Snake_effect(scale=0.90)
 
     def draw(self, screen, t):
         # vẽ theo thứ tự: nền -> ánh sáng -> rắn -> tiêu đề
         self.base.draw(screen, t)
-        self.sunny.draw(screen, t)
+        
         self.snake.draw(screen, t)
         self.title.draw(screen, t)
 
@@ -132,7 +132,7 @@ class UI_Menu:
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
         self.bg = Background_Menu()
-        self.btn_star   = Button(pos_star,"btn_star",width_btn_hcn,height_btn_hcn)
+        self.btn_star   = Button(pos_star,"btn_start",width_btn_hcn,height_btn_hcn)
         self.btn_option = Button(pos_option,"btn_option",width_btn_hcn,height_btn_hcn)
         self.btn_exit   = Button((pos_exit),"btn_exit",width_btn_hcn,height_btn_hcn)
         self.running    = True
