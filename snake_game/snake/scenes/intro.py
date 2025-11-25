@@ -12,7 +12,7 @@ pos_option =((320,550))
 pos_exit = ((320,650))
 class Button:
     def __init__(self, pos, button_name,width,height):
-        base_path = f"snake/images/scence_images/{button_name}.png"
+        base_path = f"snake/images/scenes_images/{button_name}.png"
         self.image_normal = pygame.transform.smoothscale(pygame.image.load(base_path).convert_alpha(), (width ,height))
         self.image_big    = pygame.transform.smoothscale(pygame.image.load(base_path).convert_alpha(), (int(width*1.10) ,int(height*1.10)))
         self.rect         = self.image_normal.get_rect(center=pos)
@@ -49,7 +49,7 @@ class BackgroundLayer:
         #pulse_period : khoảng thơi gian để 
         #xoay : kiểm tra xem hinh sẽ xoay hay chỉ lắc nhẹ 
 
-        base_path = f"snake/images/scence_images/{layer_name}.png"
+        base_path = f"snake/images/scenes_images/{layer_name}.png"
         surf = pygame.image.load(base_path)
         if use_alpha :surf = surf.convert_alpha()
         else :surf.convert()
@@ -81,7 +81,7 @@ class BackgroundLayer:
 
 class Snake_effect:
     def __init__(self, scale=0.90):
-        base_path = f"snake/images/scence_images/"
+        base_path = f"snake/images/scenes_images/"
         p_open   = pygame.image.load(base_path+"bg_1.on.png")
         p_closed = pygame.image.load(base_path+"bg_1.off.png")
         p_tongue = pygame.image.load(base_path+"bg_1.tongue.png")
