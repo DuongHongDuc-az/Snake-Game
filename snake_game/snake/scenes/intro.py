@@ -5,11 +5,15 @@ import math
 
 SCREEN_W = 1280
 SCREEN_H = 720
-width_btn_hcn = 230
-height_btn_hcn= 80
+width_btn = 230
+height_btn= 80
 pos_star =((320,450))
 pos_option =((320,550))
 pos_exit = ((320,650))
+pos_undo =((50,50))
+pos_player =((640,320))
+pos_bot = ((640,420))
+pos_color =((1180,600))
 class Button:
     def __init__(self, pos, button_name,width,height):
         base_path = f"snake/images/scenes_images/{button_name}.png"
@@ -105,7 +109,7 @@ class Snake_effect:
         screen.blit(img, self.pos)
 
 
-class Background_Menu:
+class Background_Menu1:
     def __init__(self):
         
         self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
@@ -123,18 +127,74 @@ class Background_Menu:
         self.snake.draw(screen, t)
         self.title.draw(screen, t)
 
-
-
-
-
-class UI_Menu:
+class Background_Menu2:
+    def __init__(self):
+        self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.board = BackgroundLayer("bg_2.board",use_alpha=True,period =10.0)
+    def draw(self,screen,t):
+        self.base.draw(screen,t)
+        self.board.draw(screen,t)
+class UI_Menu2:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
-        self.bg = Background_Menu()
-        self.btn_star   = Button(pos_star,"btn_start",width_btn_hcn,height_btn_hcn)
-        self.btn_option = Button(pos_option,"btn_option",width_btn_hcn,height_btn_hcn)
-        self.btn_exit   = Button((pos_exit),"btn_exit",width_btn_hcn,height_btn_hcn)
+        self.bg = Background_Menu2()
+        self.btn_color=Button(pos_color,"btn_color",height_btn+70,height_btn+70)
+        self.btn_undo=Button(pos_undo,"btn_undo",height_btn+20,height_btn+20)
+        self.btn_player=Button(pos_player,"btn_player",width_btn,height_btn)
+        self.btn_bot=Button(pos_bot,"btn_bot",width_btn,height_btn)
+        self.running    = True
+        self.clock      = pygame.time.Clock()  
+        self.t          = 0.0
+
+    def run(self):
+            while self.running:
+               self.dt = self.clock.tick(60)/1000.0
+               self.t += self.dt
+               self.bg.draw(self.screen,self.t)
+
+               self.btn_player.is_hover()
+               self.btn_color.is_hover()
+               self.btn_undo.is_hover()
+               self.btn_bot.is_hover()
+
+
+               self.btn_player.draw(self.screen)
+               self.btn_bot.draw(self.screen)
+               self.btn_color.draw(self.screen)
+               self.btn_undo.draw(self.screen)
+
+
+               for event in pygame.event.get():
+                  if event.type == pygame.QUIT:
+                    self.running = False
+                  if self.btn_player.is_clicked(event):
+                    print ("Player")
+                  if self.btn_bot.is_clicked(event):
+                    print ("Bot")
+                  if self.btn_color.is_clicked(event):
+                    print ("Color")
+                  if self.btn_undo.is_clicked(event):
+                    print("Undo")
+                    return "back"
+                    
+                  
+                   
+                   
+               pygame.display.flip()
+
+
+
+
+
+class UI_Menu1:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
+        self.bg = Background_Menu1()
+        self.btn_star   = Button(pos_star,"btn_start",width_btn,height_btn)
+        self.btn_option = Button(pos_option,"btn_option",width_btn,height_btn)
+        self.btn_exit   = Button((pos_exit),"btn_exit",width_btn,height_btn)
         self.running    = True
         self.clock      = pygame.time.Clock()  
         self.t          = 0.0
@@ -161,11 +221,12 @@ class UI_Menu:
                     self.running = False
                   if self.btn_star.is_clicked(event):
                     print ("Star")
+                    return "start"
                   if self.btn_option.is_clicked(event):
                     print ("option")
                   if self.btn_exit.is_clicked(event):
                     print ("Exit")
-                    return 
+                    return "exit"
                   
                    
                    
@@ -175,7 +236,17 @@ class UI_Menu:
 
     
 if __name__ == "__main__":
-    UI_Menu().run()
-    pygame.quit()
-    sys.exit()
-
+    running = True
+    menu1 = UI_Menu1()
+    menu2 = UI_Menu2()
+    while running:
+        result = menu1.run()
+        if result == "start":
+          
+            result = menu2.run()
+            if result == "back":
+                continue
+        if result == "exit":
+            running = False
+pygame.quit()
+sys.exit()
