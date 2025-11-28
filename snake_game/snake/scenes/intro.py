@@ -3,13 +3,17 @@ import sys
 import os
 import math
 
+import pygame.display
+from pygame.time import Clock
+
 SCREEN_W = 1280
 SCREEN_H = 720
-width_btn = 230
-height_btn= 80
-pos_star =((320,450))
-pos_option =((320,550))
-pos_exit = ((320,650))
+width_btn,height_btn = 230, 80 # kích thước ảnh nút đỏ
+width_undo,height_undo = 100,100
+width_color,height_color = 150,150
+pos_star =((370,420))
+pos_option =((370,520))
+pos_exit = ((370,620))
 pos_undo =((80,80))
 pos_player =((640,270))
 pos_bot = ((640,370))
@@ -26,7 +30,7 @@ class Button:
         self.height       = height
         self.hover        = False
 
-    def is_hover(self):## dùng để nhận biết vơ chuột
+    def is_hover(self):# dùng để nhận biết vơ chuột
         self.hover = self.rect.collidepoint(pygame.mouse.get_pos())
 
     def draw(self, screen):
@@ -44,16 +48,15 @@ class Button:
 
 
 class BackgroundLayer:
-    def __init__(self, layer_name, use_alpha,xoay = False,scale_factor=1.0,rot_deg=0.0, period=10.0, pulse=0.0, pulse_period=6.0):
+    def __init__(self, layer_name, use_alpha,scale_factor=1.0,rot_deg=0.0, period=10.0, pulse=0.0, pulse_period=6.0):
 
-        #layer_name : ten background
-        #use_alpha : kiem tra ảnh có xóa nền chưa
-        #scale_factor : điều chỉnh phần scale ảnh 
-        #rotdeg : góc quay
-        #period : thời gian quay
-        #pulse : độ lớn ảnh theo thời gian (ảnh thở)
-        #pulse_period : khoảng thơi gian để 
-        #xoay : kiểm tra xem hinh sẽ xoay hay chỉ lắc nhẹ 
+        #layer_name : tên background
+        #use_alpha :  true(ảnh thường),false(ảnh đã xóa nền)
+        #scale_factor : kích thước ảnh tăng n lần 
+        #rotdeg : góc quay từ (-n độ đến n độ) do xài hàm sin 
+        #period : thời gian quay 1 chu kỳ
+        #pulse : điều chỉnh kích ảnh lên từ (-n% đến n%) do xài hàm sin
+        #pulse_period : thời gian điều chỉnh 1 chu kỳ 
 
         base_path = f"snake/images/scenes_images/{layer_name}.png"
         surf = pygame.image.load(base_path)
@@ -63,17 +66,15 @@ class BackgroundLayer:
         target_w = int(SCREEN_W * scale_factor)
         target_h = int(SCREEN_H * scale_factor)
 
-        if xoay : self.base = pygame.transform.smoothscale(surf, (target_h, target_h))
-        else : self.base = pygame.transform.smoothscale(surf, (target_w, target_h))
+
+        self.base = pygame.transform.smoothscale(surf, (target_w, target_h))
         self.rot_deg = float(rot_deg)
         self.period = max(float(period), 0.001)
         self.pulse = float(pulse)
         self.pulse_period = max(float(pulse_period), 0.001)
-        self.checkxoay =xoay
 
     def draw(self, screen, t):
-        if self.checkxoay : angle = (t / self.period) * self.rot_deg
-        else :angle = self.rot_deg * math.sin(2 * math.pi * t / self.period)
+        angle = self.rot_deg * math.sin(2 * math.pi * t / self.period)
 
         scale = 1.0 + (self.pulse * math.sin(2 * math.pi * t / self.pulse_period)) if self.pulse > 0 else 1.0
         rotated = pygame.transform.rotozoom(self.base, angle, scale)
@@ -86,7 +87,7 @@ class BackgroundLayer:
 
 
 class Snake_effect:
-    def __init__(self, scale=0.90):
+    def __init__(self, scale):
         base_path = f"snake/images/scenes_images/"
         p_open   = pygame.image.load(base_path+"bg_1.on.png")
         p_closed = pygame.image.load(base_path+"bg_1.off.png")
@@ -94,12 +95,11 @@ class Snake_effect:
         self.open   = pygame.transform.smoothscale(p_open.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
         self.closed = pygame.transform.smoothscale(p_closed.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
         self.tongue = pygame.transform.smoothscale(p_tongue.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
-        # đặt mép phải, hơi lệch vào trong màn hình
         self.pos = (SCREEN_W - self.open.get_width() + int(SCREEN_W*0.02),SCREEN_H - self.open.get_height() + int(SCREEN_H*0.02))
         self.BLINK_PERIOD = 5.0  # mỗi 5s
         self.BLINK_LEN    = 0.12 # nhắm 120ms
         self.TONGUE_PERIOD = 3.0  # mỗi 3s
-        self.TONGUE_LEN    = 0.3  # lè lưỡi 300ms
+        self.TONGUE_LEN    = 0.5  # lè lưỡi 300ms
     def draw(self, screen, t):
         blink_phase = (t % self.BLINK_PERIOD)
         tongue_phase = (t % self.TONGUE_PERIOD)
@@ -111,9 +111,9 @@ class Snake_effect:
         screen.blit(img, self.pos)
 
 
-class Background_Menu1:
+class Background_Main:
     def __init__(self):
-        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=3, period=15.0)
         self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0,period=6.0, pulse=0.04, pulse_period=10.0)
         self.snake = Snake_effect(scale=1.0)
     def draw(self, screen, t):
@@ -121,7 +121,7 @@ class Background_Menu1:
         self.snake.draw(screen, t)
         self.title.draw(screen, t)
 
-class Background_Menu2:
+class Background_Select:
     def __init__(self):
         self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
         self.board = BackgroundLayer("bg_2.board",use_alpha=True)
@@ -139,7 +139,7 @@ class Background_Rule:
 
 
 
-class Button_Menu1:
+class Button_Main:
     def __init__(self):
         self.btn_start   = Button(pos_star,"btn_start",width_btn,height_btn)
         self.btn_option = Button(pos_option,"btn_option",width_btn,height_btn)
@@ -157,10 +157,10 @@ class Button_Menu1:
         if self.btn_option.is_clicked(event):return "option"
         if self.btn_exit.is_clicked(event):return "exit"
 
-class Button_Menu2:
+class Button_Select:
     def __init__(self):
-        self.btn_color=Button(pos_color,"btn_color",height_btn+70,height_btn+70)
-        self.btn_undo=Button(pos_undo,"btn_undo",height_btn+20,height_btn+20)
+        self.btn_color=Button(pos_color,"btn_color",height_color,height_color)
+        self.btn_undo=Button(pos_undo,"btn_undo",height_undo,height_undo)
         self.btn_player=Button(pos_player,"btn_player",width_btn,height_btn)
         self.btn_bot=Button(pos_bot,"btn_bot",width_btn,height_btn)
         self.btn_rule = Button(pos_rule,"btn_rule",width_btn,height_btn)
@@ -185,7 +185,7 @@ class Button_Menu2:
 
 class Button_Rule:
     def __init__(self):
-        self.btn_undo=Button(pos_undo,"btn_undo",height_btn+20,height_btn+20)
+        self.btn_undo=Button(pos_undo,"btn_undo",height_undo,height_undo)
     def is_hover(self):
         self.btn_undo.is_hover()
     def draw(self,screen):
@@ -195,14 +195,13 @@ class Button_Rule:
 
 
 
-class UI_Menu1:#giao diện vào game
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
-        self.bg = Background_Menu1()
-        self.btn = Button_Menu1()
+class UI_Main:#giao diện vào game
+    def __init__(self,clock,screen):
+        self.screen = screen
+        self.bg = Background_Main()
+        self.btn = Button_Main()
         self.running    = True
-        self.clock      = pygame.time.Clock()  
+        self.clock      = clock  
         self.t          = 0.0
     def run(self):
             while self.running:
@@ -222,14 +221,13 @@ class UI_Menu1:#giao diện vào game
                pygame.display.flip()
                
     
-class UI_Menu2:#giao diện chọn chế độ chơi và skin
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
-        self.bg = Background_Menu2()
-        self.btn = Button_Menu2()
+class UI_Select:#giao diện chọn chế độ chơi và skin
+    def __init__(self,clock,screen):
+        self.screen = screen
+        self.bg = Background_Select()
+        self.btn = Button_Select()
         self.running    = True
-        self.clock      = pygame.time.Clock()  
+        self.clock      = clock  
         self.t          = 0.0
 
     def run(self):
@@ -249,12 +247,11 @@ class UI_Menu2:#giao diện chọn chế độ chơi và skin
                pygame.display.flip()
 
 class UI_Rule:
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
+    def __init__(self,clock,screen):
+        self.screen = screen
         self.bg = Background_Rule()
         self.btn = Button_Rule()
-        self.clock = pygame.time.Clock()
+        self.clock = clock
         self.t =0.0
         self.running =True
     def run(self):
@@ -274,23 +271,20 @@ class UI_Rule:
 
 class UI_Manager:
     def __init__(self):
-        self.menus = {
-            "menu1": UI_Menu1(),
-            "menu2": UI_Menu2(),
-            "rule": UI_Rule(),          
-        }
-        self.current = "menu1"
-
-        # Map kết quả trả về → giao diện tiếp theo
-        self.transitions = {
-            "start": "menu2",
-            "rule": "rule",
-            "undo1": "menu1",
-            "undo2":"menu2"
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
+        self.clock  = pygame.time.Clock()
+        self.current = UI_Main(self.clock,self.screen)
+        
+        self.transitions = {# giá trị trả về : menu #
+            "start": UI_Select(self.clock,self.screen),
+            "rule" : UI_Rule(self.clock,self.screen),
+            "undo1": UI_Main(self.clock,self.screen),
+            "undo2": UI_Select(self.clock,self.screen)
         }
 
     def run(self):
-        result = self.menus[self.current].run()
+        result = self.current.run()
         if result == "exit":
             pygame.quit()
             sys.exit()
