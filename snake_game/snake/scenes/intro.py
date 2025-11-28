@@ -8,12 +8,12 @@ from pygame.time import Clock
 
 SCREEN_W = 1280
 SCREEN_H = 720
-width_btn,height_btn = 230, 80 # kích thước ảnh nút đỏ
+width_btn,height_btn = 260, 80*(26/23) # kích thước ảnh nút đỏ
 width_undo,height_undo = 100,100
 width_color,height_color = 150,150
-pos_star =((370,420))
-pos_option =((370,520))
-pos_exit = ((370,620))
+pos_star =((320,420))
+pos_option =((320,530))
+pos_exit = ((320,630))
 pos_undo =((80,80))
 pos_player =((640,270))
 pos_bot = ((640,370))
@@ -21,28 +21,58 @@ pos_rule = ((640,470))
 pos_color =((1180,600))
 
 class Button:
-    def __init__(self, pos, button_name,width,height):
+    def __init__(self, pos, button_name,width,height,rot = 0.0):
         base_path = f"snake/images/scenes_images/{button_name}.png"
-        self.image_normal = pygame.transform.smoothscale(pygame.image.load(base_path).convert_alpha(), (width ,height))
-        self.image_big    = pygame.transform.smoothscale(pygame.image.load(base_path).convert_alpha(), (int(width*1.10) ,int(height*1.10)))
-        self.rect         = self.image_normal.get_rect(center=pos)
-        self.width        = width
-        self.height       = height
-        self.hover        = False
+        self.image_normal = pygame.image.load(base_path).convert_alpha() 
+        self.image_big    = pygame.image.load(base_path).convert_alpha()
+        self.rot          = rot
+        if self.rot == 0:
+            self.image_normal = pygame.transform.smoothscale(self.image_normal,(width,height))
+            self.image_big    = pygame.transform.smoothscale(self.image_normal,(int(width*1.1),int(height*1.1)))
+            self.rect         = self.image_normal.get_rect(center=pos)
+            self.hover        = False
+            
+        else :
+            rad               = math.radians(rot)
+            self.height_btn   = abs(math.sin(rad))*width + abs(math.cos(rad))*height
+            self.width_btn    = abs(math.sin(rad))*height + abs(math.cos(rad))*width
+            self.image_normal = pygame.transform.rotate(self.image_normal,rot)
+            self.image_normal = pygame.transform.smoothscale(self.image_normal,(self.width_btn,self.height_btn))
+            self.rect         = self.image_normal.get_rect(center=pos)
+            self.image_big    = pygame.transform.rotate(self.image_big,rot)
+            self.image_big    = pygame.transform.smoothscale(self.image_normal,(int(self.width_btn*1.1),int(self.height_btn*1.1)))
+            self.mask         = pygame.mask.from_surface(self.image_normal)
+
 
     def is_hover(self):# dùng để nhận biết vơ chuột
-        self.hover = self.rect.collidepoint(pygame.mouse.get_pos())
+        if self.rot == 0:
+                self.hover = self.rect.collidepoint(pygame.mouse.get_pos())
+        else:
+            mx,my = pygame.mouse.get_pos()
+            if (self.rect.left<mx<self.rect.right) and (self.rect.top<my<self.rect.bottom):
+                
+                self.hover = (self.mask.get_at((mx-self.rect.left,my-self.rect.top)) == 1) 
+            else : self.hover = False   
 
     def draw(self, screen):
-        if self.hover :
-            img = self.image_big
-            rect = img.get_rect(center=self.rect.center)
-            screen.blit(img,rect)
-            
-        else : screen.blit(self.image_normal, self.rect)
-        
+        if self.rot == 0:
+            if self.hover :
+                   img = self.image_big
+                   rect = img.get_rect(center=self.rect.center)
+                   screen.blit(img,rect)
+            else : screen.blit(self.image_normal, self.rect)
+        else :
+            if self.hover:
+                img = self.image_big
+                rect = img.get_rect(center=self.rect.center)
+                screen.blit(img,rect)
+            else :
+                screen.blit(self.image_normal,self.rect)
+
     def is_clicked(self, event):## dùng để nhận biết click chuột
-        return event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos)
+        if self.rot == 0: return event.type == pygame.MOUSEBUTTONDOWN and self.hover
+        else : return event.type == pygame.MOUSEBUTTONDOWN and self.hover
+        
     
 
 
@@ -96,8 +126,8 @@ class Snake_effect:
         self.closed = pygame.transform.smoothscale(p_closed.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
         self.tongue = pygame.transform.smoothscale(p_tongue.convert_alpha(),(int(SCREEN_W*scale), int(SCREEN_H*scale)))
         self.pos = (SCREEN_W - self.open.get_width() + int(SCREEN_W*0.02),SCREEN_H - self.open.get_height() + int(SCREEN_H*0.02))
-        self.BLINK_PERIOD = 5.0  # mỗi 5s
-        self.BLINK_LEN    = 0.12 # nhắm 120ms
+        self.BLINK_PERIOD  = 5.0  # mỗi 5s
+        self.BLINK_LEN     = 0.12 # nhắm 120ms
         self.TONGUE_PERIOD = 3.0  # mỗi 3s
         self.TONGUE_LEN    = 0.5  # lè lưỡi 300ms
     def draw(self, screen, t):
@@ -141,8 +171,8 @@ class Background_Rule:
 
 class Button_Main:
     def __init__(self):
-        self.btn_start   = Button(pos_star,"btn_start",width_btn,height_btn)
-        self.btn_option = Button(pos_option,"btn_option",width_btn,height_btn)
+        self.btn_start   = Button(pos_star,"btn_start",width_btn,height_btn,rot = -3.0)
+        self.btn_option = Button(pos_option,"btn_option",width_btn,height_btn,rot = 6.9)
         self.btn_exit   = Button(pos_exit,"btn_exit",width_btn,height_btn)
     def is_hover(self):
         self.btn_start.is_hover()
@@ -159,8 +189,8 @@ class Button_Main:
 
 class Button_Select:
     def __init__(self):
-        self.btn_color=Button(pos_color,"btn_color",height_color,height_color)
-        self.btn_undo=Button(pos_undo,"btn_undo",height_undo,height_undo)
+        self.btn_color=Button(pos_color,"btn_color",width_color,height_color)
+        self.btn_undo=Button(pos_undo,"btn_undo",width_undo,height_undo)
         self.btn_player=Button(pos_player,"btn_player",width_btn,height_btn)
         self.btn_bot=Button(pos_bot,"btn_bot",width_btn,height_btn)
         self.btn_rule = Button(pos_rule,"btn_rule",width_btn,height_btn)
@@ -185,7 +215,7 @@ class Button_Select:
 
 class Button_Rule:
     def __init__(self):
-        self.btn_undo=Button(pos_undo,"btn_undo",height_undo,height_undo)
+        self.btn_undo=Button(pos_undo,"btn_undo",width_undo,height_undo)
     def is_hover(self):
         self.btn_undo.is_hover()
     def draw(self,screen):
