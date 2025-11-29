@@ -11,6 +11,7 @@ SCREEN_H = 720
 width_btn,height_btn = 260, 80*(26/23) # kích thước ảnh nút đỏ
 width_undo,height_undo = 100,100
 width_color,height_color = 150,150
+width_submit,height_submit = 170,55
 pos_star =((320,420))
 pos_option =((320,530))
 pos_exit = ((320,630))
@@ -19,7 +20,7 @@ pos_player =((640,270))
 pos_bot = ((640,370))
 pos_rule = ((640,470))
 pos_color =((1180,600))
-pos_submit = ((640, 480))
+pos_submit = ((640, 440))
 pos_inputBox = ((390, 340))
 pos_wrn = ((375, 400))
 
@@ -173,7 +174,7 @@ class Background_Rule:
 class Background_Username:
     def __init__(self):
         self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
-        self.board = BackgroundLayer("bg_usn",use_alpha=True, scale_factor=0.5)
+        self.board = BackgroundLayer("bg_usn",use_alpha=True, scale_factor=1.0)
     def draw(self,screen,t):
         self.base.draw(screen,t)
         self.board.draw(screen,t)
@@ -375,7 +376,7 @@ class UI_Username:
         self.bg = Background_Username()
         self.usn_ui = Username_Menu(pos_inputBox)
         self.btn_undo = Button(pos_undo, "btn_undo", width_undo, height_undo)
-        self.btn_submit = Button(pos_submit, "btn_submit", 130, 1040/23)
+        self.btn_submit = Button(pos_submit, "btn_submit", width_submit, height_submit)
     def run(self):
         while self.running:
             self.dt = self.clock.tick(60)/1000
