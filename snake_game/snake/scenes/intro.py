@@ -19,6 +19,9 @@ pos_player =((640,270))
 pos_bot = ((640,370))
 pos_rule = ((640,470))
 pos_color =((1180,600))
+pos_submit = ((640, 480))
+pos_inputBox = ((390, 340))
+pos_wrn = ((375, 400))
 
 class Button:
     def __init__(self, pos, button_name,width,height,rot = 0.0):
@@ -167,7 +170,13 @@ class Background_Rule:
         self.base.draw(screen,t)
         self.rule.draw(screen,t)
 
-
+class Background_Username:
+    def __init__(self):
+        self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.board = BackgroundLayer("bg_usn",use_alpha=True, scale_factor=0.5)
+    def draw(self,screen,t):
+        self.base.draw(screen,t)
+        self.board.draw(screen,t)
 
 class Button_Main:
     def __init__(self):
@@ -223,7 +232,68 @@ class Button_Rule:
     def is_clicked(self,event):
         if self.btn_undo.is_clicked(event):return "undo2"
 
+class Input_Box:
+    def __init__(self, x, y, w, h, font_size=30):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.active = False
 
+        self.color = pygame.Color("green4")
+        self.font = pygame.font.SysFont("Comic Sans MS", font_size)
+        self.text = ""
+        self.txt_surface = self.font.render(self.text, True, (255, 255, 255))
+
+        self.cursor_visible = True
+        self.cursor_time = 0
+        self.cursor_status = 0.5
+
+        self.wrn_img = pygame.image.load("snake/images/scenes_images/wrn_usn.png").convert_alpha()
+        self.show_wrn = False
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.active = True
+            else:
+                self.active = False
+        
+        if event.type == pygame.KEYDOWN and self.active:
+            if event.key == pygame.K_RETURN:
+                print("Username: ", self.text)
+            elif event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+            else:
+                if len(self.text) < 10: 
+                    self.text += event.unicode
+                    self.show_wrn = False
+                else:
+                    self.show_wrn = True
+            self.txt_surface = self.font.render(self.text, True, (255, 255, 255))
+    def update(self, dt):
+        self.cursor_time += dt
+        if self.cursor_time >= self.cursor_status:
+            self.cursor_visible = not self.cursor_visible
+            self.cursor_time = 0
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, border_radius=34)
+        txt_rect = self.txt_surface.get_rect(center=(self.rect.centerx, self.rect.centery))
+        screen.blit(self.txt_surface, txt_rect)
+
+        if self.active and self.cursor_visible:
+            self.cursor_x = txt_rect.right 
+            self.cursor_y = txt_rect.top + 6
+            self.cursor_height = txt_rect.height * 0.7
+            pygame.draw.line(screen, (255, 255, 255), (self.cursor_x, self.cursor_y), (self.cursor_x, self.cursor_y + self.cursor_height), 2)
+        if self.show_wrn: screen.blit(self.wrn_img, pos_wrn)
+
+class Username_Menu:
+    def __init__(self, pos):
+        self.input_box = Input_Box(pos[0], pos[1], 500, 40)
+    def handle_event(self, event):
+        self.input_box.handle_event(event)
+    def update(self, dt):
+        self.input_box.update(dt)
+    def draw(self, screen, bg, t):
+        bg.draw(screen, t)
+        self.input_box.draw(screen)
 
 class UI_Main:#giao diện vào game
     def __init__(self,clock,screen):
@@ -238,10 +308,8 @@ class UI_Main:#giao diện vào game
                self.dt = self.clock.tick(60)/1000.0
                self.t += self.dt
                self.bg.draw(self.screen,self.t)
-
                self.btn.is_hover()
                self.btn.draw(self.screen)
-
                for event in pygame.event.get():
                   if event.type == pygame.QUIT:
                      self.running = False
@@ -298,6 +366,38 @@ class UI_Rule:
                     return self.btn.is_clicked(event)
             pygame.display.flip()
 
+class UI_Username:
+    def __init__(self, clock, screen):
+        self.screen = screen
+        self.clock = clock
+        self.running = True
+        self.t = 0
+        self.bg = Background_Username()
+        self.usn_ui = Username_Menu(pos_inputBox)
+        self.btn_undo = Button(pos_undo, "btn_undo", width_undo, height_undo)
+        self.btn_submit = Button(pos_submit, "btn_submit", 130, 1040/23)
+    def run(self):
+        while self.running:
+            self.dt = self.clock.tick(60)/1000
+            self.t += self.dt
+            self.usn_ui.draw(self.screen, self.bg, self.t)
+            self.btn_submit.is_hover()
+            self.btn_submit.draw(self.screen)
+            self.btn_undo.is_hover()
+            self.btn_undo.draw(self.screen)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                self.usn_ui.handle_event(event)
+                if self.btn_undo.is_clicked(event):
+                    return "undo2"
+                if self.btn_submit.is_clicked(event):
+                    print("SUBMIT: ", self.usn_ui.input_box.text)
+                    return "submit"
+            self.usn_ui.update(self.dt)
+            pygame.display.flip()
+        return "done"
+
 
 class UI_Manager:
     def __init__(self):
@@ -308,9 +408,11 @@ class UI_Manager:
         
         self.transitions = {# giá trị trả về : menu #
             "start": UI_Select(self.clock,self.screen),
+            "player": UI_Username(self.clock, self.screen),
             "rule" : UI_Rule(self.clock,self.screen),
             "undo1": UI_Main(self.clock,self.screen),
-            "undo2": UI_Select(self.clock,self.screen)
+            "undo2": UI_Select(self.clock,self.screen),
+            "submit": UI_Select(self.clock, self.screen),
         }
 
     def run(self):
