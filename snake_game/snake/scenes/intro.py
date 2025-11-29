@@ -5,6 +5,7 @@ import math
 
 import pygame.display
 from pygame.time import Clock
+from snake.app import Game
 
 SCREEN_W = 1280
 SCREEN_H = 720
@@ -237,6 +238,7 @@ class Input_Box:
     def __init__(self, x, y, w, h, font_size=30):
         self.rect = pygame.Rect(x, y, w, h)
         self.active = False
+        self.game = Game()
 
         self.color = pygame.Color("green4")
         self.font = pygame.font.SysFont("Comic Sans MS", font_size)
@@ -258,7 +260,8 @@ class Input_Box:
         
         if event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_RETURN:
-                print("Username: ", self.text)
+                self.game.run(self.text)
+                self.font.render(self.text)
             elif event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
@@ -377,6 +380,7 @@ class UI_Username:
         self.usn_ui = Username_Menu(pos_inputBox)
         self.btn_undo = Button(pos_undo, "btn_undo", width_undo, height_undo)
         self.btn_submit = Button(pos_submit, "btn_submit", width_submit, height_submit)
+        self.game = Game()
     def run(self):
         while self.running:
             self.dt = self.clock.tick(60)/1000
@@ -393,8 +397,7 @@ class UI_Username:
                 if self.btn_undo.is_clicked(event):
                     return "undo2"
                 if self.btn_submit.is_clicked(event):
-                    print("SUBMIT: ", self.usn_ui.input_box.text)
-                    return "submit"
+                    self.game.run(self.usn_ui.input_box.text)
             self.usn_ui.update(self.dt)
             pygame.display.flip()
         return "done"

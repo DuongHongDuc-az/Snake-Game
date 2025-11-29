@@ -4,11 +4,12 @@ import random
 from   snake.core.snake    import Snake
 from   snake.core.food     import Food,FoodManager
 from   snake.settings      import CELL_SIZE
-from   snake.skin          import SkinManager  
+from   snake.skin          import SkinManager 
+
 class Game:
     def __init__(self):
         pygame.init()
-        self.width, self.height = 800, 600
+        self.width, self.height = 1280, 720
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Snake Game")
 
@@ -55,25 +56,28 @@ class Game:
         if self.snake.check_collision(self.width, self.height):
             self.running = False
 
-    def draw(self):
+    def draw(self, usn):
         self.screen.fill((0, 0, 0))
         self.snake.draw(self.screen)
         self.food.draw(self.screen)
         font = pygame.font.SysFont(None, 36)
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
+        usn = font.render(f"Username: {usn}", True, (255, 255, 255))
         self.screen.blit(score_text, (10, 10))
+        self.screen.blit(usn, (10, 40))
         pygame.display.flip()
 
 
-    def run(self):
+    def run(self, txt):
         while self.running:
             self.handle_events()
             self.update()
-            self.draw()
+            self.draw(txt)
             self.clock.tick(15)
 
         pygame.quit()
-        sys.exit()
+        sys.exit()   
+
 if __name__ == "__main__":
     game = Game()
     game.run()
