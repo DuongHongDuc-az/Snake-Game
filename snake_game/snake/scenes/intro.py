@@ -25,27 +25,59 @@ pos_submit = ((640, 440))
 pos_inputBox = ((390, 325))
 pos_wrn = ((375, 370))
 
+
+
+
+class Sound:
+    def __init__(self,name):
+        pygame.mixer.pre_init(44100, -16, 2, 512)
+        pygame.init()
+        base_path = f"snake/sound/sfx_{name}.mp3"
+        self.sound = pygame.mixer.Sound(base_path)
+    def run(self):
+        self.sound.play()
+       
+
+
+
+
 class Button:
     def __init__(self, pos, button_name,width,height,rot = 0.0):
         base_path = f"snake/images/scenes_images/{button_name}.png"
         self.image_normal = pygame.image.load(base_path).convert_alpha() 
-        self.image_big    = pygame.image.load(base_path).convert_alpha()
+        self.image_big    = pygame.image.load(base_path).convert_alpha() 
+      
+
         self.rot          = rot
+        self.sfx_hover    = Sound("hover")
+        self.sfx_clicked  = Sound("clicked")
+        self.was_clicked  = False
+        self.was_hover    = False
+        self.hover        = False
         if self.rot == 0:
             self.image_normal = pygame.transform.smoothscale(self.image_normal,(width,height))
-            self.image_big    = pygame.transform.smoothscale(self.image_normal,(int(width*1.1),int(height*1.1)))
+            self.image_big    = pygame.transform.smoothscale(self.image_big,(int(width*1.1),int(height*1.1)))
+          
+
             self.rect         = self.image_normal.get_rect(center=pos)
-            self.hover        = False
+           
             
         else :
             rad               = math.radians(rot)
             self.height_btn   = abs(math.sin(rad))*width + abs(math.cos(rad))*height
             self.width_btn    = abs(math.sin(rad))*height + abs(math.cos(rad))*width
+
             self.image_normal = pygame.transform.rotate(self.image_normal,rot)
             self.image_normal = pygame.transform.smoothscale(self.image_normal,(self.width_btn,self.height_btn))
-            self.rect         = self.image_normal.get_rect(center=pos)
+
+
             self.image_big    = pygame.transform.rotate(self.image_big,rot)
-            self.image_big    = pygame.transform.smoothscale(self.image_normal,(int(self.width_btn*1.1),int(self.height_btn*1.1)))
+            self.image_big    = pygame.transform.smoothscale(self.image_big,(int(self.width_btn*1.1),int(self.height_btn*1.1)))
+
+           
+
+
+            self.rect         = self.image_normal.get_rect(center=pos)
             self.mask         = pygame.mask.from_surface(self.image_normal)
 
 
@@ -75,12 +107,18 @@ class Button:
                 screen.blit(self.image_normal,self.rect)
 
     def is_clicked(self, event):## dùng để nhận biết click chuột
-        if self.rot == 0: return event.type == pygame.MOUSEBUTTONDOWN and self.hover
+        if self.rot == 0:
+            self.was_clicked = (event.type == pygame.MOUSEBUTTONDOWN and self.hover)
+            return self.was_clicked
         else : return event.type == pygame.MOUSEBUTTONDOWN and self.hover
         
+    def sound_hover(self):
+        if self.hover and not self.was_hover: 
+            self.sfx_hover.run()
+        self.was_hover = self.hover
+
     
-
-
+        
 
 class BackgroundLayer:
     def __init__(self, layer_name, use_alpha,scale_factor=1.0,rot_deg=0.0, period=10.0, pulse=0.0, pulse_period=6.0):
@@ -182,9 +220,10 @@ class Background_Username:
 
 class Button_Main:
     def __init__(self):
-        self.btn_start   = Button(pos_star,"btn_start",width_btn,height_btn,rot = -3.0)
+        self.btn_start  = Button(pos_star,"btn_start",width_btn,height_btn,rot = -3.0)
         self.btn_option = Button(pos_option,"btn_option",width_btn,height_btn,rot = 6.9)
         self.btn_exit   = Button(pos_exit,"btn_exit",width_btn,height_btn)
+       
     def is_hover(self):
         self.btn_start.is_hover()
         self.btn_option.is_hover()
@@ -197,6 +236,11 @@ class Button_Main:
         if self.btn_start.is_clicked(event):return "start"
         if self.btn_option.is_clicked(event):return "option"
         if self.btn_exit.is_clicked(event):return "exit"
+    def sound_hover(self):
+        self.btn_start.sound_hover()
+        self.btn_option.sound_hover()
+        self.btn_exit.sound_hover()
+   
 
 class Button_Select:
     def __init__(self):
@@ -223,6 +267,12 @@ class Button_Select:
         if self.btn_player.is_clicked(event):return "player"
         if self.btn_rule.is_clicked(event):return "rule"
         if self.btn_undo.is_clicked(event):return "undo1"
+    def sound_hover(self):
+        self.btn_color.sound_hover()
+        self.btn_bot.sound_hover()
+        self.btn_player.sound_hover()
+        self.btn_rule.sound_hover()
+        self.btn_undo.sound_hover()
 
 class Button_Rule:
     def __init__(self):
@@ -233,6 +283,8 @@ class Button_Rule:
         self.btn_undo.draw(screen)
     def is_clicked(self,event):
         if self.btn_undo.is_clicked(event):return "undo2"
+    def sound_hover(self):
+        self.btn_undo.sound_hover()
 
 class Input_Box:
     def __init__(self, x, y, w, h, font_size=30):
@@ -299,11 +351,13 @@ class Username_Menu:
         bg.draw(screen, t)
         self.input_box.draw(screen)
 
+
 class UI_Main:#giao diện vào game
     def __init__(self,clock,screen):
         self.screen = screen
         self.bg = Background_Main()
         self.btn = Button_Main()
+        self.clicked = Sound("clicked")
         self.running    = True
         self.clock      = clock  
         self.t          = 0.0
@@ -314,10 +368,12 @@ class UI_Main:#giao diện vào game
                self.bg.draw(self.screen,self.t)
                self.btn.is_hover()
                self.btn.draw(self.screen)
+               self.btn.sound_hover()
                for event in pygame.event.get():
                   if event.type == pygame.QUIT:
                      self.running = False
                   if self.btn.is_clicked(event):
+                     self.clicked.run()
                      return self.btn.is_clicked(event)
   
                pygame.display.flip()
@@ -328,6 +384,7 @@ class UI_Select:#giao diện chọn chế độ chơi và skin
         self.screen = screen
         self.bg = Background_Select()
         self.btn = Button_Select()
+        self.clicked = Sound("clicked")
         self.running    = True
         self.clock      = clock  
         self.t          = 0.0
@@ -339,11 +396,12 @@ class UI_Select:#giao diện chọn chế độ chơi và skin
                self.bg.draw(self.screen,self.t)
                self.btn.is_hover()
                self.btn.draw(self.screen)
-             
+               self.btn.sound_hover()
                for event in pygame.event.get():
                   if event.type == pygame.QUIT:
                     self.running = False
                   if self.btn.is_clicked(event):
+                    self.clicked.run()
                     return self.btn.is_clicked(event)
                   
                pygame.display.flip()
@@ -353,6 +411,7 @@ class UI_Rule:
         self.screen = screen
         self.bg = Background_Rule()
         self.btn = Button_Rule()
+        self.clicked = Sound("clicked")
         self.clock = clock
         self.t =0.0
         self.running =True
@@ -363,10 +422,12 @@ class UI_Rule:
             self.bg.draw(self.screen,self.t)
             self.btn.is_hover()
             self.btn.draw(self.screen)
+            self.btn.sound_hover()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
                 if self.btn.is_clicked(event):
+                    self.clicked.run()
                     return self.btn.is_clicked(event)
             pygame.display.flip()
 
@@ -378,6 +439,7 @@ class UI_Username:
         self.t = 0
         self.bg = Background_Username()
         self.usn_ui = Username_Menu(pos_inputBox)
+        self.clicked = Sound("clicked")
         self.btn_undo = Button(pos_undo, "btn_undo", width_undo, height_undo)
         self.btn_submit = Button(pos_submit, "btn_submit", width_submit, height_submit)
         self.game = Game()
@@ -388,15 +450,19 @@ class UI_Username:
             self.usn_ui.draw(self.screen, self.bg, self.t)
             self.btn_submit.is_hover()
             self.btn_submit.draw(self.screen)
+            self.btn_submit.sound_hover()
             self.btn_undo.is_hover()
             self.btn_undo.draw(self.screen)
+            self.btn_undo.sound_hover
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
                 self.usn_ui.handle_event(event)
                 if self.btn_undo.is_clicked(event):
+                    self.clicked.run()
                     return "undo2"
                 if self.btn_submit.is_clicked(event):
+                    self.clicked.run()
                     self.game.run(self.usn_ui.input_box.text)
             self.usn_ui.update(self.dt)
             pygame.display.flip()
