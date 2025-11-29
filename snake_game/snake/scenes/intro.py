@@ -21,8 +21,8 @@ pos_bot = ((640,370))
 pos_rule = ((640,470))
 pos_color =((1180,600))
 pos_submit = ((640, 440))
-pos_inputBox = ((390, 340))
-pos_wrn = ((375, 400))
+pos_inputBox = ((390, 325))
+pos_wrn = ((375, 370))
 
 class Button:
     def __init__(self, pos, button_name,width,height,rot = 0.0):
