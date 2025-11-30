@@ -40,7 +40,6 @@ class Sound:
 
 
 
-
 class Button:
     def __init__(self, pos, button_name,width,height,rot = 0.0):
         base_path = f"snake/images/scenes_images/{button_name}.png"
@@ -186,7 +185,7 @@ class Snake_effect:
 
 class Background_Main:
     def __init__(self):
-        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=3, period=15.0)
+        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
         self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0,period=6.0, pulse=0.04, pulse_period=10.0)
         self.snake = Snake_effect(scale=1.0)
     def draw(self, screen, t):
@@ -213,7 +212,7 @@ class Background_Rule:
 class Background_Username:
     def __init__(self):
         self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
-        self.board = BackgroundLayer("bg_usn",use_alpha=True, scale_factor=1.0)
+        self.board = BackgroundLayer("bg_usn",use_alpha=True)
     def draw(self,screen,t):
         self.base.draw(screen,t)
         self.board.draw(screen,t)
@@ -291,6 +290,7 @@ class Input_Box:
         self.rect = pygame.Rect(x, y, w, h)
         self.active = False
         self.game = Game()
+        self.cliked = Sound("clicked")
 
         self.color = pygame.Color("green4")
         self.font = pygame.font.SysFont("Comic Sans MS", font_size)
@@ -312,6 +312,7 @@ class Input_Box:
         
         if event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_RETURN:
+                self.cliked.run()
                 self.game.run(self.text)
                 self.font.render(self.text)
             elif event.key == pygame.K_BACKSPACE:
@@ -353,14 +354,14 @@ class Username_Menu:
 
 
 class UI_Main:#giao diện vào game
-    def __init__(self,clock,screen):
+    def __init__(self,clock,screen,t =0):
         self.screen = screen
         self.bg = Background_Main()
         self.btn = Button_Main()
         self.clicked = Sound("clicked")
         self.running    = True
         self.clock      = clock  
-        self.t          = 0.0
+        self.t          = t
     def run(self):
             while self.running:
                self.dt = self.clock.tick(60)/1000.0
@@ -374,20 +375,20 @@ class UI_Main:#giao diện vào game
                      self.running = False
                   if self.btn.is_clicked(event):
                      self.clicked.run()
-                     return self.btn.is_clicked(event)
+                     return self.btn.is_clicked(event),self.t 
   
                pygame.display.flip()
                
     
 class UI_Select:#giao diện chọn chế độ chơi và skin
-    def __init__(self,clock,screen):
+    def __init__(self,clock,screen,t =0):
         self.screen = screen
         self.bg = Background_Select()
         self.btn = Button_Select()
         self.clicked = Sound("clicked")
         self.running    = True
         self.clock      = clock  
-        self.t          = 0.0
+        self.t          = t
 
     def run(self):
             while self.running:
@@ -402,18 +403,18 @@ class UI_Select:#giao diện chọn chế độ chơi và skin
                     self.running = False
                   if self.btn.is_clicked(event):
                     self.clicked.run()
-                    return self.btn.is_clicked(event)
+                    return self.btn.is_clicked(event),self.t
                   
                pygame.display.flip()
 
 class UI_Rule:
-    def __init__(self,clock,screen):
+    def __init__(self,clock,screen,t =0):
         self.screen = screen
         self.bg = Background_Rule()
         self.btn = Button_Rule()
         self.clicked = Sound("clicked")
         self.clock = clock
-        self.t =0.0
+        self.t =t
         self.running =True
     def run(self):
         while self.running:
@@ -428,15 +429,15 @@ class UI_Rule:
                     self.running = False
                 if self.btn.is_clicked(event):
                     self.clicked.run()
-                    return self.btn.is_clicked(event)
+                    return self.btn.is_clicked(event),self.t
             pygame.display.flip()
 
 class UI_Username:
-    def __init__(self, clock, screen):
+    def __init__(self, clock, screen,t=0):
         self.screen = screen
         self.clock = clock
         self.running = True
-        self.t = 0
+        self.t = t
         self.bg = Background_Username()
         self.usn_ui = Username_Menu(pos_inputBox)
         self.clicked = Sound("clicked")
@@ -460,7 +461,7 @@ class UI_Username:
                 self.usn_ui.handle_event(event)
                 if self.btn_undo.is_clicked(event):
                     self.clicked.run()
-                    return "undo2"
+                    return "undo3",self.t
                 if self.btn_submit.is_clicked(event):
                     self.clicked.run()
                     self.game.run(self.usn_ui.input_box.text)
@@ -474,24 +475,31 @@ class UI_Manager:
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
         self.clock  = pygame.time.Clock()
-        self.current = UI_Main(self.clock,self.screen)
+        self.T     = 0.0
+        self.current= UI_Main
         
+       
+      
+
         self.transitions = {# giá trị trả về : menu #
-            "start": UI_Select(self.clock,self.screen),
-            "player": UI_Username(self.clock, self.screen),
-            "rule" : UI_Rule(self.clock,self.screen),
-            "undo1": UI_Main(self.clock,self.screen),
-            "undo2": UI_Select(self.clock,self.screen),
-            "submit": UI_Select(self.clock, self.screen),
+            "start": UI_Select,
+            "player": UI_Username,
+            "rule" : UI_Rule,
+            "undo1": UI_Main,
+            "undo2": UI_Select,
+            "undo3": UI_Select,
         }
 
     def run(self):
-        result = self.current.run()
-        if result == "exit":
-            pygame.quit()
-            sys.exit()
-        elif result in self.transitions:
-            self.current = self.transitions[result]
+           result,t = self.current(self.clock,self.screen,t=self.T).run()
+           self.T  = t
+           if result == "exit":
+                pygame.quit()
+                sys.exit()
+           elif result in self.transitions:
+              
+               self.current = self.transitions[result]
+      
 
        
 
@@ -502,4 +510,3 @@ if __name__ == "__main__":
     manager.run()
 
            
-       
