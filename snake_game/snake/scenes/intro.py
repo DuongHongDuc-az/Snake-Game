@@ -433,7 +433,7 @@ class UI_Rule:
             pygame.display.flip()
 
 class UI_Username:
-    def __init__(self, clock, screen,t=0):
+    def __init__(self,clock,screen,t=0):
         self.screen = screen
         self.clock = clock
         self.running = True
@@ -476,29 +476,37 @@ class UI_Manager:
         self.screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
         self.clock  = pygame.time.Clock()
         self.T     = 0.0
-        self.current= UI_Main
         
-       
-      
+        
 
         self.transitions = {# giá trị trả về : menu #
-            "start": UI_Select,
-            "player": UI_Username,
-            "rule" : UI_Rule,
-            "undo1": UI_Main,
-            "undo2": UI_Select,
-            "undo3": UI_Select,
+            "start": "select",
+            "player": "user",
+            "rule" : "rule",
+            "undo1": "main",
+            "undo2": "select",
+            "undo3": "select",
         }
 
+        self.Load_ui = {
+            "main":UI_Main(self.clock,self.screen,t = self.T),
+            "select":UI_Select(self.clock,self.screen,t = self.T),
+            "rule":UI_Rule(self.clock,self.screen,t = self.T),
+            "user":UI_Username(self.clock,self.screen,t = self.T)
+            }
+        self.current = "main"
+
+
     def run(self):
-           result,t = self.current(self.clock,self.screen,t=self.T).run()
+           result,t = self.Load_ui[self.current].run()
            self.T  = t
            if result == "exit":
                 pygame.quit()
                 sys.exit()
            elif result in self.transitions:
-              
                self.current = self.transitions[result]
+           for ui in self.Load_ui.values():
+               ui.t = self.T
       
 
        
