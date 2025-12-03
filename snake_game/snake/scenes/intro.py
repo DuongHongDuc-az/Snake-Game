@@ -24,10 +24,9 @@ pos_color =((1180,600))
 pos_submit = ((640, 440))
 pos_inputBox = ((390, 325))
 pos_wrn = ((375, 370))
-
-
-
-
+pos_return =((450,590))
+pos_exit1 =((810,590))
+color_text =(64,224,208)
 class Sound:
     def __init__(self,name):
         pygame.mixer.pre_init(44100, -16, 2, 512)
@@ -37,8 +36,6 @@ class Sound:
     def run(self):
         self.sound.play()
        
-
-
 
 class Button:
     def __init__(self, pos, button_name,width,height,rot = 0.0):
@@ -185,7 +182,7 @@ class Snake_effect:
 
 class Background_Main:
     def __init__(self):
-        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.2 ,rot_deg=4, period=10.0)
         self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0,period=6.0, pulse=0.04, pulse_period=10.0)
         self.snake = Snake_effect(scale=1.0)
     def draw(self, screen, t):
@@ -195,7 +192,7 @@ class Background_Main:
 
 class Background_Select:
     def __init__(self):
-        self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.2 ,rot_deg=4, period=10.0)
         self.board = BackgroundLayer("bg_2.board",use_alpha=True)
     def draw(self,screen,t):
         self.base.draw(screen,t)
@@ -203,7 +200,7 @@ class Background_Select:
 
 class Background_Rule:
     def __init__(self):
-        self.base =  BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.base =  BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.2 ,rot_deg=4, period=10.0)
         self.rule =  BackgroundLayer("rule", use_alpha=True  )
     def draw(self,screen,t):
         self.base.draw(screen,t)
@@ -211,11 +208,28 @@ class Background_Rule:
 
 class Background_Username:
     def __init__(self):
-        self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.1 ,rot_deg=4, period=10.0)
+        self.base = BackgroundLayer("bg_1",use_alpha=False ,scale_factor=1.2 ,rot_deg=4, period=10.0)
         self.board = BackgroundLayer("bg_usn",use_alpha=True)
     def draw(self,screen,t):
         self.base.draw(screen,t)
         self.board.draw(screen,t)
+
+class Background_Score:
+    def __init__(self):
+        self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.2 ,rot_deg=4, period=10.0)
+        self.board = BackgroundLayer("bg_score", use_alpha=True)
+    def draw(self, screen, t,usn,point):
+        self.base.draw(screen, t)
+        self.board.draw(screen, t)
+        pygame.draw.line(screen,(0,0,0),(330,430),(910,430),1)
+
+        # usn = usn.upper()
+        
+        font = pygame.font.Font("snake/images/font.ttf", 100)
+        score_text = font.render(f"{point}", True, color_text)
+        usn = font.render(f"{usn}:", True, color_text)
+        screen.blit(score_text, (680,370))
+        screen.blit(usn, (330, 370))
 
 class Button_Main:
     def __init__(self):
@@ -273,6 +287,8 @@ class Button_Select:
         self.btn_rule.sound_hover()
         self.btn_undo.sound_hover()
 
+
+
 class Button_Rule:
     def __init__(self):
         self.btn_undo=Button(pos_undo,"btn_undo",width_undo,height_undo)
@@ -285,12 +301,31 @@ class Button_Rule:
     def sound_hover(self):
         self.btn_undo.sound_hover()
 
+class Button_Score:
+    def __init__(self):
+        self.btn_return  = Button(pos_return,"btn_return",width_btn,height_btn)
+        self.btn_exit   = Button(pos_exit1,"btn_exit",width_btn,height_btn)
+       
+    def is_hover(self):
+        self.btn_return.is_hover()
+        self.btn_exit.is_hover()
+    def draw(self,screen):
+        self.btn_return.draw(screen)
+        self.btn_exit.draw(screen)
+    def is_clicked(self,event):
+        if self.btn_return.is_clicked(event):return "return"
+        if self.btn_exit.is_clicked(event):return "exit1"
+    def sound_hover(self):
+        self.btn_return.sound_hover()
+        self.btn_exit.sound_hover()
+
+
+
 class Input_Box:
     def __init__(self, x, y, w, h, font_size=30):
         self.rect = pygame.Rect(x, y, w, h)
         self.active = False
         self.game = Game()
-        self.cliked = Sound("clicked")
 
         self.color = pygame.Color("green4")
         self.font = pygame.font.SysFont("Comic Sans MS", font_size)
@@ -312,9 +347,8 @@ class Input_Box:
         
         if event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_RETURN:
-                self.cliked.run()
-                self.game.run(self.text)
-                self.font.render(self.text)
+                self.font.render(self.text,True, (255, 255, 255))
+                return True
             elif event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
@@ -381,7 +415,7 @@ class UI_Main:#giao diện vào game
                
     
 class UI_Select:#giao diện chọn chế độ chơi và skin
-    def __init__(self,clock,screen,t =0):
+    def __init__(self,clock,screen,t ):
         self.screen = screen
         self.bg = Background_Select()
         self.btn = Button_Select()
@@ -408,7 +442,7 @@ class UI_Select:#giao diện chọn chế độ chơi và skin
                pygame.display.flip()
 
 class UI_Rule:
-    def __init__(self,clock,screen,t =0):
+    def __init__(self,clock,screen,t ):
         self.screen = screen
         self.bg = Background_Rule()
         self.btn = Button_Rule()
@@ -433,7 +467,7 @@ class UI_Rule:
             pygame.display.flip()
 
 class UI_Username:
-    def __init__(self,clock,screen,t=0):
+    def __init__(self,clock,screen,t):
         self.screen = screen
         self.clock = clock
         self.running = True
@@ -461,14 +495,41 @@ class UI_Username:
                 self.usn_ui.handle_event(event)
                 if self.btn_undo.is_clicked(event):
                     self.clicked.run()
-                    return "undo3",self.t
+                    return "undo3",self.t,"hihi"
+
                 if self.btn_submit.is_clicked(event):
                     self.clicked.run()
-                    self.game.run(self.usn_ui.input_box.text)
+                    return "game",self.t,self.usn_ui.input_box.text
             self.usn_ui.update(self.dt)
             pygame.display.flip()
-        return "done"
-
+       
+class UI_Score:
+    def __init__(self,clock,screen,t,player_name,point):
+        self.screen = screen
+        self.bg = Background_Score()
+        self.btn = Button_Score()
+        self.clicked = Sound("clicked")
+        self.running    = True
+        self.clock      = clock  
+        self.t          = t
+        self.usn        = player_name
+        self.point      =point
+    def run(self):
+            while self.running:
+               self.dt = self.clock.tick(60)/1000.0
+               self.t += self.dt
+               self.bg.draw(self.screen,self.t,self.usn,self.point)
+               self.btn.is_hover()
+               self.btn.draw(self.screen)
+               self.btn.sound_hover()
+               for event in pygame.event.get():
+                  if event.type == pygame.QUIT:
+                     self.running = False
+                  if self.btn.is_clicked(event):
+                     self.clicked.run()
+                     return self.btn.is_clicked(event),self.t 
+  
+               pygame.display.flip()
 
 class UI_Manager:
     def __init__(self):
@@ -485,31 +546,45 @@ class UI_Manager:
             "rule" : "rule",
             "undo1": "main",
             "undo2": "select",
-            "undo3": "select",
+            "undo3":"select",
+            "return":"user",
+            "exit1":"main"
+           
         }
 
         self.Load_ui = {
             "main":UI_Main(self.clock,self.screen,t = self.T),
             "select":UI_Select(self.clock,self.screen,t = self.T),
             "rule":UI_Rule(self.clock,self.screen,t = self.T),
-            "user":UI_Username(self.clock,self.screen,t = self.T)
+            "user":UI_Username(self.clock,self.screen,t = self.T),
+           
             }
         self.current = "main"
 
 
     def run(self):
+        if self.current != "user":
            result,t = self.Load_ui[self.current].run()
            self.T  = t
-           if result == "exit":
+           if result == "exit" :
                 pygame.quit()
                 sys.exit()
            elif result in self.transitions:
                self.current = self.transitions[result]
-           for ui in self.Load_ui.values():
-               ui.t = self.T
-      
-
        
+        else:
+            result,t,usn = self.Load_ui[self.current].run()
+            self.T = t
+            if result == "undo3": 
+                self.current = self.transitions[result]
+            else:
+                self.T = t
+                score = Game().run(usn)
+                result , t = UI_Score(self.clock,self.screen,t = self.T,player_name=usn,point = score).run()
+                self.T = t
+                self.current = self.transitions[result]
+        for ui in self.Load_ui.values():
+            ui.t = self.T
 
 if __name__ == "__main__":
    
