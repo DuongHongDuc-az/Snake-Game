@@ -4,6 +4,7 @@ import os
 import math
 import pygame.display
 from pygame.time import Clock
+from snake.settings import TEXTS
 try:
     from snake.app import Game
     import snake.settings as settings
@@ -62,10 +63,10 @@ class Sound:
 
 class Button:
     def __init__(self, pos, button_name, width, height, rot=0.0):
+        lang_suffix = f"_{settings.LANGUAGE.lower()}" if settings.LANGUAGE != "EN" else ""
         base_path = f"snake/images/scenes_images/{button_name}.png"
-        
-        # Fallback if image doesn't exist to prevent crash during testing
         if not os.path.exists(base_path):
+            base_path = f"snake/images/scenes_images/{button_name}.png"
             print(f"Warning: Image not found {base_path}, creating placeholder.")
             self.image_normal = pygame.Surface((width, height))
             self.image_normal.fill((255, 0, 0))
@@ -74,7 +75,6 @@ class Button:
         else:
             self.image_normal = pygame.image.load(base_path).convert_alpha()
             self.image_big = pygame.image.load(base_path).convert_alpha()
-
         self.rot = rot
         self.sfx_hover = Sound("hover")
         self.sfx_clicked = Sound("clicked")
@@ -694,6 +694,7 @@ class UI_Option:
         current_vol = getattr(settings, 'SOUND_VOLUME', 0.5)
         self.slider = Slider((slider_x, slider_y), 300, current_vol)
         self.btn_back = Button(pos_undo, "btn_undo", width_undo, height_undo)
+        self.lang_rect = pygame.Rect(SCREEN_W//2-100, self.slider.pos[1]+80, 200, 50)
         self.running = True
 
     def run(self):
@@ -705,13 +706,21 @@ class UI_Option:
             
             try:
                 font = pygame.font.SysFont("Arial", 40, bold=True)
+                vol_label = TEXTS[settings.LANGUAGE]["volume"]
                 vol_percent = int(self.slider.value * 100)
                 text_color = (0, 255, 0) if vol_percent > 0 else (255, 0, 0)
                 text_surf = font.render(f"Volume: {vol_percent}%", True, text_color)
                 text_rect = text_surf.get_rect(center=(SCREEN_W // 2, self.slider.pos[1] - 50))
                 self.screen.blit(text_surf, text_rect)
-            except:
-                pass
+                
+                lang_str = settings.TEXTS[settings.LANGUAGE]["lang_label"]
+                lang_surf = font.render(lang_str, True, (255, 255, 0))
+                self.lang_rect.size = lang_surf.get_size()
+                self.lang_rect.center = (SCREEN_W // 2, self.slider.pos[1] + 100)
+                pygame.draw.rect(self.screen, (50, 50, 50), self.lang_rect.inflate(20, 10), border_radius=10)
+                self.screen.blit(lang_surf, self.lang_rect)
+            except Exception as e:
+                print(f"Error drawing text: {e}")
 
             self.slider.draw(self.screen)
             self.btn_back.is_hover()
@@ -726,6 +735,13 @@ class UI_Option:
                 if self.btn_back.is_clicked(event):
                     self.clicked.run()
                     return "menu", self.t
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.lang_rect.collidepoint(event.pos):
+                        self.clicked.run()
+                        if settings.LANGUAGE == "EN":
+                            settings.LANGUAGE = "VI"
+                        else:
+                            settings.LANGUAGE = "EN"
             pygame.display.flip()
 
 class UI_Manager:

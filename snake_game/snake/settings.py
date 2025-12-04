@@ -13,3 +13,20 @@ option_pos=((400,420))
 exit_pos=((400,490))
 SOUND_ON = True
 SOUND_VOLUME = 0.5
+LANGUAGE = "EN"
+TEXTS = {
+    "EN": {
+        "score": "Score",
+        "username": "Username",
+        "volume": "Volume",
+        "lang_label": "Language: English",  
+        "btn_back": "Back"
+    },
+    "VI": {
+        "score": "Điểm",
+        "username": "Tên",
+        "volume": "Âm lượng",
+        "lang_label": "Ngôn ngữ: Tiếng Việt", 
+        "btn_back": "Quay lại"
+    }
+}

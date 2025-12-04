@@ -5,7 +5,8 @@ from   snake.core.snake    import Snake
 from   snake.core.food     import Food,FoodManager
 from   snake.settings      import CELL_SIZE
 from   snake.skin          import SkinManager 
-
+from snake.settings import CELL_SIZE, TEXTS
+import snake.settings as settings
 class Game:
     def __init__(self):
         pygame.init()
@@ -61,6 +62,8 @@ class Game:
         self.snake.draw(self.screen)
         self.food.draw(self.screen)
         font = pygame.font.SysFont(None, 36)
+        lbl_score = TEXTS[settings.LANGUAGE]["score"]
+        lbl_usn = TEXTS[settings.LANGUAGE]["username"]
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
         usn = font.render(f"Username: {usn}", True, (255, 255, 255))
         self.screen.blit(score_text, (10, 10))
