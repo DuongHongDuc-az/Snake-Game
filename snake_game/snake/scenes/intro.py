@@ -6,7 +6,9 @@ import math
 import pygame.display
 from pygame.time import Clock
 from snake.app import Game
-
+import snake.settings as settings
+if not hasattr(settings, 'SOUND_ON'): settings.SOUND_ON = True
+if not hasattr(settings, 'SOUND_VOLUME'): settings.SOUND_VOLUME = 0.5
 SCREEN_W = 1280
 SCREEN_H = 720
 width_btn,height_btn = 260, 80*(26/23) # kích thước ảnh nút đỏ
@@ -34,7 +36,10 @@ class Sound:
         base_path = f"snake/sound/sfx_{name}.mp3"
         self.sound = pygame.mixer.Sound(base_path)
     def run(self):
-        self.sound.play()
+        if self.sound:
+            vol = settings.SOUND_VOLUME if settings.SOUND_ON else 0.0
+            self.sound.set_volume(vol)
+            self.sound.play()
        
 
 class Button:
@@ -213,7 +218,17 @@ class Background_Username:
     def draw(self,screen,t):
         self.base.draw(screen,t)
         self.board.draw(screen,t)
-
+class Background_Option:
+    def __init__(self):
+        self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor = 1.1, rot_deg=4, period=10.0)
+        try:
+            self.board = BackgroundLayer("bg_1", use_alpha=True)
+        except:
+            print("Chưa có file bg_option.png, đang dùng tạm bg_2.board")
+            self.board = BackgroundLayer("bg_2.board", use_alpha=True)
+    def draw(self, screen, t):
+        self.base.draw(screen, t)
+        self.board.draw(screen, t)
 class Background_Score:
     def __init__(self):
         self.base  = BackgroundLayer("bg_1", use_alpha=False ,scale_factor=1.2 ,rot_deg=4, period=10.0)
@@ -300,7 +315,42 @@ class Button_Rule:
         if self.btn_undo.is_clicked(event):return "undo2"
     def sound_hover(self):
         self.btn_undo.sound_hover()
+class Button_Option:
+    def __init__(self):
+        # Nút Bật/Tắt âm thanh (Dùng tạm hình btn_option)
+        self.btn_sound = Button(pos_option, "btn_audio", width_btn, height_btn)
+        # Nút Quay lại (Dùng hình btn_undo)
+        self.btn_back = Button(pos_undo, "btn_undo", width_undo, height_undo)
 
+    def is_hover(self):
+        self.btn_sound.is_hover()
+        self.btn_back.is_hover()
+
+    def draw(self, screen):
+        self.btn_sound.draw(screen)
+        self.btn_back.draw(screen)
+    
+
+        try:
+            status = "ON" if settings.SOUND_ON else "OFF"
+            color = (0, 255, 0) if settings.SOUND_ON else (255, 0, 0)
+            font = pygame.font.SysFont("Arial", 50, bold=True)
+            text = font.render(f"Sound: {status}", True, color)
+            text_rect = text.get_rect(center=(self.btn_sound.rect.centerx, self.btn_sound.rect.top - 30))
+            screen.blit(text, text_rect)
+        except Exception as e:
+            pass
+
+    def is_clicked(self, event):
+        if self.btn_sound.is_clicked(event):
+            return "toggle_sound"
+        if self.btn_back.is_clicked(event):
+            return "back"
+        return None
+
+    def sound_hover(self):
+        self.btn_sound.sound_hover()
+        self.btn_back.sound_hover()
 class Button_Score:
     def __init__(self):
         self.btn_return  = Button(pos_return,"btn_return",width_btn,height_btn)
@@ -530,7 +580,42 @@ class UI_Score:
                      return self.btn.is_clicked(event),self.t 
   
                pygame.display.flip()
-
+class UI_Option:
+    def __init__(self, clock, screen, t=0):
+        self.screen = screen
+        self.clock = clock
+        self.t = t
+        self.bg = Background_Option()
+        self.btn = Button_Option()
+        self.clicked = Sound("clicked")
+        self.running = True
+    def run(self):
+        while self.running:
+            self.dt = self.clock.tick(60)/1000.0
+            self.t += self.dt
+            
+            # Vẽ nền
+            self.bg.draw(self.screen, self.t)
+            
+            # Vẽ nút
+            self.btn.is_hover()
+            self.btn.draw(self.screen)
+            self.btn.sound_hover()
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    return "exit", self.t
+                
+                action = self.btn.is_clicked(event)
+                if action:
+                    self.clicked.run()
+                    if action == "toggle_sound":
+                        settings.SOUND_ON = not settings.SOUND_ON
+                    elif action == "back":
+                        return "menu", self.t
+            
+            pygame.display.flip()
 class UI_Manager:
     def __init__(self):
         pygame.init()

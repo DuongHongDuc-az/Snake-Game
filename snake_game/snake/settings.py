@@ -11,3 +11,5 @@ FOOD_IMAGES = ["apple.png", "grape.png", "orange.png"]
 play_pos= ((400,350))
 option_pos=((400,420))
 exit_pos=((400,490))
+SOUND_ON = True
+SOUND_VOLUME = 0.5
