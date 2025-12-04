@@ -4,28 +4,20 @@ import os
 import math
 import pygame.display
 from pygame.time import Clock
-
-# Assumes these exist in your project structure
-# If testing alone, you may need to mock these imports
 try:
     from snake.app import Game
     import snake.settings as settings
 except ImportError:
-    # Fallback for standalone testing if files are missing
     print("Warning: snake.app or snake.settings not found. Using mock data.")
     class Game:
         def run(self, name): return 100
     class Settings: pass
     settings = Settings()
-
-# --- Global Settings Initialization ---
 if not hasattr(settings, 'SOUND_ON'): settings.SOUND_ON = True
 if not hasattr(settings, 'SOUND_VOLUME'): settings.SOUND_VOLUME = 0.5
 
-# --- Constants ---
 SCREEN_W = 1280
 SCREEN_H = 720
-# Ensure dimensions are integers for pygame functions
 width_btn, height_btn = 260, int(80 * (26 / 23)) 
 width_undo, height_undo = 100, 100
 width_color, height_color = 150, 150
@@ -755,11 +747,6 @@ class UI_Manager:
             "exit1": "main",
             "menu": "main"
         }
-
-        # Initialize UIs
-        # Note: Initializing all scenes at start is okay for small games, 
-        # but passing self.T by reference isn't possible in Python like C++.
-        # We manually update self.T in the run loop.
         self.Load_ui = {
             "main": UI_Main(self.clock, self.screen, t=self.T),
             "select": UI_Select(self.clock, self.screen, t=self.T),
