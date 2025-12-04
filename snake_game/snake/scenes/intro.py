@@ -396,7 +396,8 @@ class Input_Box:
                 self.active = False
         
         if event.type == pygame.KEYDOWN and self.active:
-            if event.key == pygame.K_RETURN:
+            if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                self.game.run(self.text)
                 self.font.render(self.text,True, (255, 255, 255))
                 return True
             elif event.key == pygame.K_BACKSPACE:
