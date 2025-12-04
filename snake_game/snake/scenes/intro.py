@@ -627,14 +627,15 @@ class UI_Manager:
 
         self.transitions = {# giá trị trả về : menu #
             "start": "select",
+            "option": "option",
             "player": "user",
             "rule" : "rule",
             "undo1": "main",
             "undo2": "select",
             "undo3":"select",
             "return":"user",
-            "exit1":"main"
-           
+            "exit1":"main",
+            "menu": "main"
         }
 
         self.Load_ui = {
@@ -642,7 +643,7 @@ class UI_Manager:
             "select":UI_Select(self.clock,self.screen,t = self.T),
             "rule":UI_Rule(self.clock,self.screen,t = self.T),
             "user":UI_Username(self.clock,self.screen,t = self.T),
-           
+            "option": UI_Option(self.clock, self.screen, t=self.T) 
             }
         self.current = "main"
 
