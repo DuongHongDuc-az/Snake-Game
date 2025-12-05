@@ -72,16 +72,20 @@ class Button:
         self.assets_en = self.load_assets("")
         
         self.assets_vi = self.load_assets("_vi")
-        
+
         self.sfx_hover = Sound("hover")
         self.sfx_clicked = Sound("clicked")
         self.was_clicked = False
         self.was_hover = False
+        self.hover = False 
+
     def load_assets(self, suffix):
         base_path = f"snake/images/scenes_images/{self.button_name}{suffix}.png"
+        
         if not os.path.exists(base_path):
-            base_path = f"snake/images/scenes_image/{self.button_name}.png"
-        if not os.path.exists(base_path):            
+            base_path = f"snake/images/scenes_images/{self.button_name}.png"
+
+        if not os.path.exists(base_path):
             image_normal = pygame.Surface((self.width, self.height))
             image_normal.fill((255, 0, 0))
             image_big = pygame.Surface((self.width, self.height))
@@ -89,6 +93,7 @@ class Button:
         else:
             image_normal = pygame.image.load(base_path).convert_alpha()
             image_big = pygame.image.load(base_path).convert_alpha()
+
         if self.rot == 0:
             image_normal = pygame.transform.smoothscale(image_normal, (int(self.width), int(self.height)))
             image_big = pygame.transform.smoothscale(image_big, (int(self.width * 1.1), int(self.height * 1.1)))
@@ -108,19 +113,20 @@ class Button:
             rect = image_normal.get_rect(center=self.pos)
             mask = pygame.mask.from_surface(image_normal)
             
-        # Trả về bộ dữ liệu: (ảnh thường, ảnh to, khung hcn, mặt nạ va chạm)
         return {"normal": image_normal, "big": image_big, "rect": rect, "mask": mask}
 
     @property
     def current_assets(self):
-        """Lấy bộ ảnh dựa trên ngôn ngữ hiện tại"""
-        # Kiểm tra biến LANGUAGE trong settings
         if hasattr(settings, 'LANGUAGE') and settings.LANGUAGE == "VI":
             return self.assets_vi
         return self.assets_en
 
+    @property
+    def rect(self):
+        return self.current_assets["rect"]
+
     def is_hover(self):
-        assets = self.current_assets # Lấy tài nguyên hiện tại
+        assets = self.current_assets
         rect = assets["rect"]
         mask = assets["mask"]
         
@@ -137,12 +143,11 @@ class Button:
                 self.hover = False
 
     def draw(self, screen):
-        assets = self.current_assets # Lấy tài nguyên hiện tại (quan trọng!)
+        assets = self.current_assets
         rect = assets["rect"]
         
         if self.hover:
             img = assets["big"]
-            # Căn giữa ảnh to vào vị trí của nút
             draw_rect = img.get_rect(center=rect.center)
             screen.blit(img, draw_rect)
         else:
@@ -735,68 +740,146 @@ class Slider:
         pygame.draw.circle(screen, (255, 255, 255), (int(self.knob_pos[0]), int(self.knob_pos[1])), self.knob_radius)
         pygame.draw.circle(screen, self.color_knob, (int(self.knob_pos[0]), int(self.knob_pos[1])), self.knob_radius - 3)
 
+# --- Cập nhật Class Background_Option (Dùng khung trắng) ---
+class Background_Option:
+    def __init__(self):
+        # 1. Ảnh nền tia sáng xoay (bg_1)
+        self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
+        
+        # 2. Ảnh bảng Settings (bg_option - Khung trắng có tiêu đề)
+        # Code tự động tìm bg_option_vi.png nếu ngôn ngữ là VI
+        self.board = BackgroundLayer("bg_option", use_alpha=True, scale_factor=1.0) 
+
+    def draw(self, screen, t):
+        self.base.draw(screen, t)
+        self.board.draw(screen, t)
+
+# --- Cập nhật Class UI_Option (Vẽ Icon và Nút thủ công) ---
 class UI_Option:
     def __init__(self, clock, screen, t=0):
         self.screen = screen
         self.clock = clock
         self.t = t
         self.bg = Background_Option()
-        self.btn = Button_Option()
         self.clicked = Sound("clicked")
-        slider_x = SCREEN_W // 2 - 150
-        slider_y = SCREEN_H // 2 + 50
-        current_vol = getattr(settings, 'SOUND_VOLUME', 0.5)
-        self.slider = Slider((slider_x, slider_y), 300, current_vol)
-        self.btn_back = Button(pos_undo, "btn_undo", width_undo, height_undo)
-        self.lang_rect = pygame.Rect(SCREEN_W//2-100, self.slider.pos[1]+80, 200, 50)
         self.running = True
+        
+        try:
+            self.icon_vol = pygame.image.load("snake/images/scenes_images/btn_sound.png").convert_alpha()
+            self.icon_music = pygame.image.load("snake/images/scenes_images/music.png").convert_alpha()
+            self.icon_lang = pygame.image.load("snake/images/scenes_images/btn_language.png").convert_alpha()
+            
+            icon_size = (60, 60)
+            self.icon_vol = pygame.transform.smoothscale(self.icon_vol, icon_size)
+            self.icon_music = pygame.transform.smoothscale(self.icon_music, icon_size)
+            self.icon_lang = pygame.transform.smoothscale(self.icon_lang, icon_size)
+        except Exception as e:
+            print(f"Icon warning: {e}")
+            self.icon_vol = pygame.Surface((60, 60)); self.icon_vol.fill((0, 255, 0))
+            self.icon_music = pygame.Surface((60, 60)); self.icon_music.fill((0, 255, 0))
+            self.icon_lang = pygame.Surface((60, 60)); self.icon_lang.fill((0, 255, 0))
 
+        center_x = SCREEN_W // 2
+        center_y = SCREEN_H // 2
+        
+        x_icon = center_x - 160
+        x_control = center_x - 50
+        
+        y_row1 = center_y - 80
+        self.pos_icon_vol = self.icon_vol.get_rect(center=(x_icon, y_row1))
+        current_vol = getattr(settings, 'SOUND_VOLUME', 0.5)
+        self.slider = Slider((x_control, y_row1 - 5), 300, current_vol)
+        
+        y_row2 = center_y + 30
+        self.pos_icon_music = self.icon_music.get_rect(center=(x_icon, y_row2))
+        self.btn_sound = Button((x_control + 70, y_row2), "btn_audio", 140, 55) 
+        
+        y_row3 = center_y + 140
+        self.pos_icon_lang = self.icon_lang.get_rect(center=(x_icon, y_row3))
+        self.lang_rect = pygame.Rect(x_control, y_row3 - 25, 300, 50)
+        
+        self.btn_back = Button(pos_undo, "btn_undo", width_undo, height_undo)
+    def get_font(self):
+        if settings.LANGUAGE == "VI":
+            if os.path.exists("snake/images/font_vi.ttf"):
+                 return pygame.font.Font("snake/images/font_vi.ttf", 32)
+            return pygame.font.SysFont("tahoma, segoeui, verdana, arial", 32, bold=True)
+        if os.path.exists("snake/images/font.ttf"):
+            return pygame.font.Font("snake/images/font.ttf", 32)
+        return pygame.font.SysFont("arial", 32, bold=True)
     def run(self):
         while self.running:
-            self.dt = self.clock.tick(60) / 1000.0
-            self.t += self.dt
-            # Draw BG
-            self.bg.draw(self.screen, self.t)
-            
             try:
-                font = pygame.font.SysFont("Arial", 40, bold=True)
-                vol_label = TEXTS[settings.LANGUAGE]["volume"]
-                vol_percent = int(self.slider.value * 100)
-                text_color = (0, 255, 0) if vol_percent > 0 else (255, 0, 0)
-                text_surf = font.render(f"Volume: {vol_percent}%", True, text_color)
-                text_rect = text_surf.get_rect(center=(SCREEN_W // 2, self.slider.pos[1] - 50))
-                self.screen.blit(text_surf, text_rect)
+                self.dt = self.clock.tick(60) / 1000.0
+                self.t += self.dt
                 
-                lang_str = settings.TEXTS[settings.LANGUAGE]["lang_label"]
-                lang_surf = font.render(lang_str, True, (255, 255, 0))
-                self.lang_rect.size = lang_surf.get_size()
-                self.lang_rect.center = (SCREEN_W // 2, self.slider.pos[1] + 100)
-                pygame.draw.rect(self.screen, (50, 50, 50), self.lang_rect.inflate(20, 10), border_radius=10)
-                self.screen.blit(lang_surf, self.lang_rect)
-            except Exception as e:
-                print(f"Error drawing text: {e}")
+                self.bg.draw(self.screen, self.t)
+                
+                self.screen.blit(self.icon_vol, self.pos_icon_vol)
+                self.screen.blit(self.icon_music, self.pos_icon_music)
+                self.screen.blit(self.icon_lang, self.pos_icon_lang)
+                
+                font = pygame.font.SysFont("Arial", 32, bold=True)
+                
+                self.slider.draw(self.screen)
+                vol_pct = int(self.slider.value * 100)
+                vol_str = settings.TEXTS[settings.LANGUAGE]["volume"]
+                vol_surf = font.render(f"{vol_pct}%", True, (80, 80, 80))
+                self.screen.blit(vol_surf, (self.slider.pos[0] + self.slider.width + 15, self.slider.pos[1] - 15))
 
-            self.slider.draw(self.screen)
-            self.btn_back.is_hover()
-            self.btn_back.draw(self.screen)
-            self.btn_back.sound_hover()
-            
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                    return "exit", self.t
-                self.slider.update(event)
-                if self.btn_back.is_clicked(event):
-                    self.clicked.run()
-                    return "menu", self.t
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.lang_rect.collidepoint(event.pos):
+                self.btn_sound.is_hover() 
+                self.btn_sound.draw(self.screen)
+                
+                status = "ON" if settings.SOUND_ON else "OFF"
+                color = (0, 150, 0) if settings.SOUND_ON else (200, 0, 0)
+                stat_surf = font.render(status, True, color)
+                self.screen.blit(stat_surf, (self.btn_sound.rect.right + 15, self.btn_sound.rect.centery - 18))
+
+                if self.lang_rect.collidepoint(pygame.mouse.get_pos()):
+                    pygame.draw.rect(self.screen, (200, 200, 200), self.lang_rect, border_radius=10)
+                    pygame.draw.rect(self.screen, (100, 100, 100), self.lang_rect, 2, border_radius=10)
+                
+                lang_name = settings.TEXTS[settings.LANGUAGE]["lang_label"]
+                lang_surf = font.render(lang_name, True, (50, 50, 50))
+                lang_rect_center = lang_surf.get_rect(center=self.lang_rect.center)
+                self.screen.blit(lang_surf, lang_rect_center)
+
+                self.btn_back.is_hover()
+                self.btn_back.draw(self.screen)
+                self.btn_back.sound_hover()
+                
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
+                        return "exit", self.t
+                    
+                    self.slider.update(event)
+                    
+                    if self.btn_back.is_clicked(event):
                         self.clicked.run()
-                        if settings.LANGUAGE == "EN":
-                            settings.LANGUAGE = "VI"
-                        else:
-                            settings.LANGUAGE = "EN"
-            pygame.display.flip()
+                        return "menu", self.t
+                    
+                    if self.btn_sound.is_clicked(event):
+                        self.clicked.run()
+                        settings.SOUND_ON = not settings.SOUND_ON
+                        if settings.SOUND_ON and self.slider.value == 0:
+                            self.slider.value = 0.5
+                            settings.SOUND_VOLUME = 0.5
+                            self.slider.knob_pos[0] = self.slider.pos[0] + self.slider.width * 0.5
+                    
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if self.lang_rect.collidepoint(event.pos):
+                            self.clicked.run()
+                            if settings.LANGUAGE == "EN":
+                                settings.LANGUAGE = "VI"
+                            else:
+                                settings.LANGUAGE = "EN"
+                            
+                pygame.display.flip()
+
+            except Exception as e:
+                print(f"CRITICAL UI ERROR: {e}")
+                return "menu", self.t
 
 class UI_Manager:
     def __init__(self):
