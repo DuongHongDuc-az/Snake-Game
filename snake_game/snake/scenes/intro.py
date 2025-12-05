@@ -290,27 +290,6 @@ class Background_Username:
     def draw(self, screen, t):
         self.base.draw(screen, t)
         self.board.draw(screen, t)
-
-class Background_Option:
-    def __init__(self):
-        self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
-<<<<<<< HEAD
-        self.board = BackgroundLayer("bg_option", use_alpha=True)
-        
-       
-=======
-        self.title = BackgroundLayer("bg_option", use_alpha=True)
-        self.snake = Snake_effect(scale=1.0)
-        try:
-            self.board = BackgroundLayer("bg_1", use_alpha=True, pulse=0.02, pulse_period=5.0)
-        except:
-            print("Chưa có file bg_option.png, đang dùng tạm bg_2.board")
-            self.board = BackgroundLayer("bg_2.board", use_alpha=True, pulse=0.02, pulse_period=5.0)
->>>>>>> 30e00141e44f498daf3819730aa6683a8deb6abb
-
-    def draw(self, screen, t):
-        self.base.draw(screen, t)
-        self.board.draw(screen, t)
       
 
 class Background_Score:
@@ -411,33 +390,6 @@ class Button_Rule:
     def sound_hover(self):
         self.btn_undo.sound_hover()
 
-class Button_Option:
-    def __init__(self):
-        self.btn_sound = Button(pos_sound, "btn_sound", width_btn, height_btn)
-        self.btn_back = Button(pos_undo, "btn_undo", width_undo, height_undo)
-        self.btn_music = Button(pos_music, "btn_music", width_btn, height_btn)
-        self.btn_language = Button(pos_language, "btn_language", width_btn, height_btn)
-        
-    def is_hover(self):
-        self.btn_sound.is_hover()
-        self.btn_back.is_hover()
-        self.btn_music.is_hover()
-        self.btn_language.is_hover()
-    def draw(self, screen):
-        self.btn_sound.draw(screen)
-        self.btn_back.draw(screen)
-
-
-    def is_clicked(self, event):
-        if self.btn_sound.is_clicked(event):
-            return "toggle_sound"
-        if self.btn_back.is_clicked(event):
-            return "back"
-        return None
-
-    def sound_hover(self):
-        self.btn_sound.sound_hover()
-        self.btn_back.sound_hover()
 
 class Button_Score:
     def __init__(self):
