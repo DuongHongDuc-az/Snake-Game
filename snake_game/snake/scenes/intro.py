@@ -35,10 +35,10 @@ pos_color = (1180, 600)
 pos_submit = (640, 440)
 pos_inputBox = (390, 325)
 pos_wrn = (375, 370)
-pos_return = (450, 590)
-pos_exit1 = (810, 590)
+pos_return = (470, 550)
+pos_exit1 = (830, 550)
 color_text = (64, 224, 208)
-
+pos_idk=((850,390))
 class Sound:
     def __init__(self, name):
         try:
@@ -397,15 +397,17 @@ class Button_Score:
     def __init__(self):
         self.btn_return = Button(pos_return, "btn_return", width_btn, height_btn)
         self.btn_exit = Button(pos_exit1, "btn_exit", width_btn, height_btn)
+        self.btn_idk  = Button(pos_idk,"btn_idk",55,60)
+
 
     def is_hover(self):
         self.btn_return.is_hover()
         self.btn_exit.is_hover()
-
+        self.btn_idk.is_hover()
     def draw(self, screen):
         self.btn_return.draw(screen)
         self.btn_exit.draw(screen)
-
+        self.btn_idk.draw(screen)
     def is_clicked(self, event):
         if self.btn_return.is_clicked(event): return "return"
         if self.btn_exit.is_clicked(event): return "exit1"
@@ -413,7 +415,7 @@ class Button_Score:
     def sound_hover(self):
         self.btn_return.sound_hover()
         self.btn_exit.sound_hover()
-
+        
 class Input_Box:
     def __init__(self, x, y, w, h, font_size=30):
         self.rect = pygame.Rect(x, y, w, h)
