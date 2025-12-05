@@ -35,10 +35,10 @@ pos_color = (1180, 600)
 pos_submit = (640, 440)
 pos_inputBox = (390, 325)
 pos_wrn = (375, 370)
-pos_return = (450, 590)
-pos_exit1 = (810, 590)
+pos_return = (470, 550)
+pos_exit1 = (830, 550)
 color_text = (64, 224, 208)
-
+pos_idk=((850,390))
 class Sound:
     def __init__(self, name):
         try:
@@ -438,15 +438,17 @@ class Button_Score:
     def __init__(self):
         self.btn_return = Button(pos_return, "btn_return", width_btn, height_btn)
         self.btn_exit = Button(pos_exit1, "btn_exit", width_btn, height_btn)
+        self.btn_idk  = Button(pos_idk,"btn_idk",55,60)
+
 
     def is_hover(self):
         self.btn_return.is_hover()
         self.btn_exit.is_hover()
-
+        self.btn_idk.is_hover()
     def draw(self, screen):
         self.btn_return.draw(screen)
         self.btn_exit.draw(screen)
-
+        self.btn_idk.draw(screen)
     def is_clicked(self, event):
         if self.btn_return.is_clicked(event): return "return"
         if self.btn_exit.is_clicked(event): return "exit1"
@@ -454,12 +456,12 @@ class Button_Score:
     def sound_hover(self):
         self.btn_return.sound_hover()
         self.btn_exit.sound_hover()
-
+        
 class Input_Box:
     def __init__(self, x, y, w, h, font_size=30):
         self.rect = pygame.Rect(x, y, w, h)
         self.active = False
-        self.game = Game()
+        self.star_game = False
 
         self.color = pygame.Color("green4")
         self.font = pygame.font.SysFont("Comic Sans MS", font_size)
@@ -478,6 +480,7 @@ class Input_Box:
         self.show_wrn = False
 
     def handle_event(self, event):
+       
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = True
@@ -486,9 +489,9 @@ class Input_Box:
 
         if event.type == pygame.KEYDOWN and self.active:
             if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
-                self.game.run(self.text)
+                
                 self.font.render(self.text, True, (255, 255, 255))
-                return True
+                self.star_game = True
             elif event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
@@ -498,6 +501,11 @@ class Input_Box:
                 else:
                     self.show_wrn = True
             self.txt_surface = self.font.render(self.text, True, (255, 255, 255))
+    def enter_game (self):
+        if self.star_game:
+            self.star_game = False
+            return True
+        return False
 
     def update(self, dt):
         self.cursor_time += dt
@@ -530,6 +538,8 @@ class Username_Menu:
     def draw(self, screen, bg, t):
         bg.draw(screen, t)
         self.input_box.draw(screen)
+    def enter_game(self):
+        return self.input_box.enter_game()
 
 class UI_Main:
     def __init__(self, clock, screen, t=0):
@@ -623,7 +633,7 @@ class UI_Username:
         self.clicked = Sound("clicked")
         self.btn_undo = Button(pos_undo, "btn_undo", width_undo, height_undo)
         self.btn_submit = Button(pos_submit, "btn_submit", width_submit, height_submit)
-        self.game = Game()
+       
 
     def run(self):
         while self.running:
@@ -641,14 +651,17 @@ class UI_Username:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                    return "exit", self.t, ""
+                    return "exit", self.t
                 self.usn_ui.handle_event(event)
+                if self.usn_ui.enter_game() :
+                    return "game", self.t, self.usn_ui.input_box.text
                 if self.btn_undo.is_clicked(event):
                     self.clicked.run()
-                    return "undo3", self.t, "hihi"
+                    return "undo3", self.t, "..."
                 if self.btn_submit.is_clicked(event):
                     self.clicked.run()
                     return "game", self.t, self.usn_ui.input_box.text
+               
             self.usn_ui.update(self.dt)
             pygame.display.flip()
 
