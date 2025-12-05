@@ -248,19 +248,14 @@ class Background_Username:
 class Background_Option:
     def __init__(self):
         self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
-        self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0, period=6.0, pulse=0.04, pulse_period=10.0)
-        self.snake = Snake_effect(scale=1.0)
-        try:
-            self.board = BackgroundLayer("bg_1", use_alpha=True, pulse=0.02, pulse_period=5.0)
-        except:
-            print("Chưa có file bg_option.png, đang dùng tạm bg_2.board")
-            self.board = BackgroundLayer("bg_2.board", use_alpha=True, pulse=0.02, pulse_period=5.0)
+        self.board = BackgroundLayer("bg_option", use_alpha=True)
+        
+       
 
     def draw(self, screen, t):
         self.base.draw(screen, t)
         self.board.draw(screen, t)
-        self.snake.draw(screen, t)
-        self.title.draw(screen, t)
+      
 
 class Background_Score:
     def __init__(self):
@@ -362,25 +357,20 @@ class Button_Rule:
 
 class Button_Option:
     def __init__(self):
-        self.btn_sound = Button(pos_option, "btn_audio", width_btn, height_btn)
+        self.btn_sound = Button(pos_sound, "btn_sound", width_btn, height_btn)
         self.btn_back = Button(pos_undo, "btn_undo", width_undo, height_undo)
-
+        self.btn_music = Button(pos_music, "btn_music", width_btn, height_btn)
+        self.btn_language = Button(pos_language, "btn_language", width_btn, height_btn)
+        
     def is_hover(self):
         self.btn_sound.is_hover()
         self.btn_back.is_hover()
-
+        self.btn_music.is_hover()
+        self.btn_language.is_hover()
     def draw(self, screen):
         self.btn_sound.draw(screen)
         self.btn_back.draw(screen)
-        try:
-            status = "ON" if settings.SOUND_ON else "OFF"
-            color = (0, 255, 0) if settings.SOUND_ON else (255, 0, 0)
-            font = pygame.font.SysFont("Arial", 50, bold=True)
-            text = font.render(f"Sound: {status}", True, color)
-            text_rect = text.get_rect(center=(self.btn_sound.rect.centerx, self.btn_sound.rect.top - 30))
-            screen.blit(text, text_rect)
-        except Exception as e:
-            pass
+
 
     def is_clicked(self, event):
         if self.btn_sound.is_clicked(event):
