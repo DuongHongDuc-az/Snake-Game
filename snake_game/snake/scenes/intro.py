@@ -289,7 +289,7 @@ class Background_Username:
 class Background_Option:
     def __init__(self):
         self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
-        self.title = BackgroundLayer("bg_1.title", use_alpha=True, scale_factor=1.00, rot_deg=3.0, period=6.0, pulse=0.04, pulse_period=10.0)
+        self.title = BackgroundLayer("bg_option", use_alpha=True)
         self.snake = Snake_effect(scale=1.0)
         try:
             self.board = BackgroundLayer("bg_1", use_alpha=True, pulse=0.02, pulse_period=5.0)
