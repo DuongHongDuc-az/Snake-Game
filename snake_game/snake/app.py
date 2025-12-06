@@ -56,15 +56,26 @@ class Game:
 
         if self.snake.check_collision(self.width, self.height):
             self.running = False
-
+    def draw_grass(self):
+        grass_color_1 = (167, 209, 61)
+        grass_color_2 = (175, 215, 70)
+        cell_size = settings.CELL_SIZE
+        for row in range (self.height//cell_size):
+            for col in range(self.width//cell_size):
+                if (row+col)%2==0:
+                    color = grass_color_1
+                else:
+                    color = grass_color_2
+                rect = pygame.Rect(col*cell_size, row*cell_size, cell_size, cell_size)
+                pygame.draw.rect(self.screen, color, rect)
     def draw(self, usn):
-        self.screen.fill((0, 0, 0))
-        self.snake.draw(self.screen)
+        self.draw_grass()
+        self.snake.draw(self.screen, self.food.position)
         self.food.draw(self.screen)
         font = pygame.font.SysFont(None, 36)
         lbl_score = TEXTS[settings.LANGUAGE]["score"]
         lbl_usn = TEXTS[settings.LANGUAGE]["username"]
-        score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
+        score_text = font.render(f"{lbl_score}: {self.score}", True, (255, 255, 255))
         usn = font.render(f"Username: {usn}", True, (255, 255, 255))
         self.screen.blit(score_text, (10, 10))
         self.screen.blit(usn, (10, 40))

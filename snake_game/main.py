@@ -4,7 +4,7 @@ from snake.app import Game
 from snake.scenes.intro import UI_Manager
 
 # if __name__ == "__main__":
-#    Game().run()
+#    Game().run()a
 #    pygame.quit()
 #    sys.exit()
 
