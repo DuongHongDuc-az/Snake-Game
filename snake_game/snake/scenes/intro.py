@@ -290,27 +290,71 @@ class Background_Username:
     def draw(self, screen, t):
         self.base.draw(screen, t)
         self.board.draw(screen, t)
-      
+
+color_text = (64, 224, 208) 
+
 
 class Background_Score:
     def __init__(self):
         self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
         self.board = BackgroundLayer("bg_score", use_alpha=True)
 
-    def draw(self, screen, t, usn, point):
-        self.base.draw(screen, t)
-        self.board.draw(screen, t)
-        pygame.draw.line(screen, (0, 0, 0), (330, 430), (910, 430), 1)
+        # Font
+        try:
+            self.font_name = pygame.font.Font("snake/images/font.ttf", 100)   # tên
+        except:
+            self.font_name = pygame.font.SysFont("Arial", 100)
 
         try:
-            font = pygame.font.Font("snake/images/font.ttf", 100)
+            self.font_score = pygame.font.SysFont("Consolas", 100)            # điểm (monospace)
         except:
-            font = pygame.font.SysFont("Arial", 100)
+            self.font_score = self.font_name
 
-        score_text = font.render(f"{point}", True, color_text)
-        usn_text = font.render(f"{usn}:", True, color_text)
-        screen.blit(score_text, (680, 370))
-        screen.blit(usn_text, (330, 370))
+    # Method trong class -> cần self
+    def render_with_outline(self, text, font, fill=(46, 196, 182), outline=(20, 20, 20), offset=1):
+        """
+        Render chữ có viền (outline) 1–2 px để nổi bật hơn.
+        """
+        base = font.render(text, True, fill)
+        out  = font.render(text, True, outline)
+        surf = pygame.Surface((base.get_width()+2*offset, base.get_height()+2*offset), pygame.SRCALPHA)
+        for dx, dy in [(-offset,0),(offset,0),(0,-offset),(0,offset)]:
+            surf.blit(out, (dx+offset, dy+offset))
+        surf.blit(base, (offset, offset))
+        return surf
+
+    def draw(self, screen, t, usn, point):
+        # Vẽ nền
+        self.base.draw(screen, t)
+        self.board.draw(screen, t)
+
+        # Hộp dòng & baseline
+        line_rect   = pygame.Rect(330, 360, 580, 120)
+        baseline_y  = 430
+        pygame.draw.line(screen, (0, 0, 0), (line_rect.left, baseline_y), (line_rect.right, baseline_y), 1)
+
+        # --- TẠO SURFACE CHỮ (có outline) ---
+        usn_surf   = self.render_with_outline(f"{usn}:", self.font_name, fill=color_text)
+        score_surf = self.render_with_outline(str(point), self.font_score, fill=color_text)
+
+        # --- CĂN THEO BASELINE ---
+        # Tên: căn trái + bám baseline
+        usn_rect = usn_surf.get_rect()
+        usn_rect.left = line_rect.left + 10
+        usn_rect.top  = baseline_y - self.font_name.get_ascent() - 10
+
+        # Điểm: căn phải + bám baseline (chừa 130 px cho icon)
+        score_rect = score_surf.get_rect()
+        score_rect.right = line_rect.right - 130
+        score_rect.top   = baseline_y - self.font_score.get_ascent() -10
+
+        # --- VẼ LÊN MÀN HÌNH ---
+        screen.blit(usn_surf, usn_rect)
+        screen.blit(score_surf, score_rect)
+
+
+       
+
 
 class Button_Main:
     def __init__(self):
@@ -611,12 +655,16 @@ class UI_Username:
                     return "exit", self.t
                 self.usn_ui.handle_event(event)
                 if self.usn_ui.enter_game() :
+                    name = self.usn_ui.input_box.text 
+                    if not bool(name.strip()): self.usn_ui.input_box.text = "PLAYER"
                     return "game", self.t, self.usn_ui.input_box.text
                 if self.btn_undo.is_clicked(event):
                     self.clicked.run()
                     return "undo3", self.t, "..."
                 if self.btn_submit.is_clicked(event):
                     self.clicked.run()
+                    name = self.usn_ui.input_box.text 
+                    if not bool(name.strip()): self.usn_ui.input_box.text = "PLAYER"
                     return "game", self.t, self.usn_ui.input_box.text
                
             self.usn_ui.update(self.dt)
@@ -721,7 +769,7 @@ class UI_Option:
             self.icon_music = pygame.image.load("snake/images/scenes_images/music.png").convert_alpha()
             self.icon_lang = pygame.image.load("snake/images/scenes_images/btn_language.png").convert_alpha()
             
-            icon_size = (60, 60)
+            icon_size = (97, 97)
             self.icon_vol = pygame.transform.smoothscale(self.icon_vol, icon_size)
             self.icon_music = pygame.transform.smoothscale(self.icon_music, icon_size)
             self.icon_lang = pygame.transform.smoothscale(self.icon_lang, icon_size)
@@ -734,15 +782,15 @@ class UI_Option:
         center_x = SCREEN_W // 2
         center_y = SCREEN_H // 2
         
-        x_icon = center_x - 160
-        x_control = center_x - 50
+        x_icon = center_x - 250
+        x_control = center_x - 150
         
-        y_row1 = center_y - 80
+        y_row1 = center_y - 120
         self.pos_icon_vol = self.icon_vol.get_rect(center=(x_icon, y_row1))
         current_vol = getattr(settings, 'SOUND_VOLUME', 0.5)
         self.slider = Slider((x_control, y_row1 - 5), 300, current_vol)
         
-        y_row2 = center_y + 30
+        y_row2 = center_y + 10
         self.pos_icon_music = self.icon_music.get_rect(center=(x_icon, y_row2))
         self.btn_sound = Button((x_control + 70, y_row2), "btn_audio", 140, 55) 
         
