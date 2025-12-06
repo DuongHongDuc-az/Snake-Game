@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 import random
 from   snake.core.snake    import Snake
 from   snake.core.food     import Food,FoodManager
@@ -21,13 +22,31 @@ class Game:
         self.random_food = FoodManager()
         self.food = Food(self.width, self.height,self.random_food)
         self.score = 0
+        self.load_sounds()
         self.reset()
-       
+    def load_sounds(self):
+        self.eat_sound = None
+        self.game_over_sound = None
+        sound_dir = "snake/sound/"
+        try:
+            if os.path.exists(sound_dir + "eat.mp3"):
+                self.eat_sound = pygame.mixer.Sound(sound_dir + "eat.mp3")
+            if os.path.exists(sound_dir + "gameover.mp3"):
+                self.game_over_sound = pygame.mixer.Sound(sound_dir + "gameover.mp3")
+            if os.path.exists(sound_dir + "bg_music.mp3"):
+                pygame.mixer.music.load(sound_dir + "bg_music.mp3")
+                pygame.mixer.music.set_volume(0.3)
+        except Exception as e:
+            print(f"Error aduio: {e}")
     def reset(self):
         self.snake = Snake(self.skin_manager)
         self.food = Food(self.width, self.height, self.random_food)
         self.score = 0
         self.game_over = False
+        if settings.SOUND_ON:
+            try:
+                pygame.mixer.music.play(-1)
+            except: pass
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -52,9 +71,17 @@ class Game:
             self.food.image = random.choice(self.random_food.images)
             self.food.position = self.food.random_pos()
             self.score += 1
+            if settings.SOUND_ON and self.eat_sound:
+                self.eat_sound.set_volume(settings.SOUND_VOLUME)
+                self.eat_sound.play()
             return
 
         if self.snake.check_collision(self.width, self.height):
+            if settings.SOUND_ON:
+                pygame.mixer.music.stop()
+                if self.game_over_sound:
+                    self.game_over_sound.set_volume(settings.SOUND_VOLUME)
+                    self.game_over_sound.play()
             self.running = False
     def draw_grass(self):
         grass_color_1 = (167, 209, 61)
