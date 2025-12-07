@@ -9,7 +9,7 @@ from   snake.skin          import SkinManager
 from snake.settings import CELL_SIZE, TEXTS
 import snake.settings as settings
 class Game:
-    def __init__(self):
+    def __init__(self,name_color):
         pygame.init()
         self.width, self.height = 1280, 720
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -17,7 +17,7 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.running = True
-        self.skin_manager = SkinManager("Basic_purple")
+        self.skin_manager = SkinManager(name_color)
         self.snake = Snake(self.skin_manager)
         self.random_food = FoodManager()
         self.food = Food(self.width, self.height,self.random_food)

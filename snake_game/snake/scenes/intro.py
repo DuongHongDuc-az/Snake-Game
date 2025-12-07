@@ -21,8 +21,9 @@ SCREEN_W = 1280
 SCREEN_H = 720
 width_btn, height_btn = 260, int(80 * (26 / 23)) 
 width_undo, height_undo = 100, 100
-width_color, height_color = 150, 150
+width_btn_color, height_btn_color = 150, 150
 width_submit, height_submit = 170, 55
+width_color, height_color = 300, int(80 * (26 / 23))
 
 pos_star = (320, 420)
 pos_option = (320, 530)
@@ -39,6 +40,18 @@ pos_return = (470, 550)
 pos_exit1 = (830, 550)
 color_text = (64, 224, 208)
 pos_idk=((850,390))
+
+pos_red=((640,470))
+pos_green=((640,370))
+pos_purple=((640,270))
+
+pos_tick1r =((810 ,245))
+pos_tick2r =((810,345))
+pos_tick3r =((810,445))
+pos_tick1l =((415 ,245))
+pos_tick2l =((415,345))
+pos_tick3l =((415,445))
+
 class Sound:
     def __init__(self, name):
         try:
@@ -149,6 +162,7 @@ class Button:
         if self.hover:
             img = assets["big"]
             draw_rect = img.get_rect(center=rect.center)
+
             screen.blit(img, draw_rect)
         else:
             screen.blit(assets["normal"], rect)
@@ -282,6 +296,15 @@ class Background_Rule:
         self.base.draw(screen, t)
         self.rule.draw(screen, t)
 
+class Background_Color:
+    def __init__(self):
+        self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
+        self.board = BackgroundLayer("bg_color", use_alpha=True)
+
+    def draw(self, screen, t):
+        self.base.draw(screen, t)
+        self.board.draw(screen,t)
+
 class Background_Username:
     def __init__(self):
         self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
@@ -306,11 +329,11 @@ class Background_Score:
             self.font_name = pygame.font.SysFont("Arial", 100)
 
         try:
-            self.font_score = pygame.font.SysFont("Consolas", 100)            # điểm (monospace)
+            self.font_score = pygame.font.SysFont("Consolas", 80)            # điểm (monospace)
         except:
             self.font_score = self.font_name
 
-    # Method trong class -> cần self
+    
     def render_with_outline(self, text, font, fill=(46, 196, 182), outline=(20, 20, 20), offset=1):
         """
         Render chữ có viền (outline) 1–2 px để nổi bật hơn.
@@ -384,12 +407,12 @@ class Button_Main:
 
 class Button_Select:
     def __init__(self):
-        self.btn_color = Button(pos_color, "btn_color", width_color, height_color)
+        self.btn_color = Button(pos_color, "btn_color", width_btn_color, height_btn_color)
         self.btn_undo = Button(pos_undo, "btn_undo", width_undo, height_undo)
         self.btn_player = Button(pos_player, "btn_player", width_btn, height_btn)
         self.btn_bot = Button(pos_bot, "btn_bot", width_btn, height_btn)
         self.btn_rule = Button(pos_rule, "btn_rule", width_btn, height_btn)
-
+       
     def is_hover(self):
         self.btn_color.is_hover()
         self.btn_bot.is_hover()
@@ -457,7 +480,47 @@ class Button_Score:
     def sound_hover(self):
         self.btn_return.sound_hover()
         self.btn_exit.sound_hover()
+
+class Button_Color:
+    def __init__(self):
+        self.btn_purple = Button(pos_purple, "purple", width_color, height_color)
+        self.btn_green = Button(pos_green, "green", width_color, height_color)
+        self.btn_red = Button(pos_red, "red", width_color, height_color)
+        self.arrow_r = pygame.image.load("snake/images/scenes_images/arrow_r.png").convert_alpha()
+        self.arrow_r = pygame.transform.smoothscale(self.arrow_r,(55,55))
+        self.arrow_l = pygame.image.load("snake/images/scenes_images/arrow_l.png").convert_alpha()
+        self.arrow_l = pygame.transform.smoothscale(self.arrow_l,(55,55))
+    def is_hover(self):
+        self.btn_red.is_hover()
+        self.btn_green.is_hover()
+        self.btn_purple.is_hover()
         
+    def draw(self, screen):
+        self.btn_purple.draw(screen)
+        self.btn_green.draw(screen)
+        self.btn_red.draw(screen)
+    def draw_tick(self,screen,color):
+        if color =="basic_purple" : 
+            screen.blit(self.arrow_r,pos_tick1r)
+            screen.blit(self.arrow_l,pos_tick1l)
+        if color =="basic_green" : 
+            screen.blit(self.arrow_r,pos_tick2r)
+            screen.blit(self.arrow_l,pos_tick2l)
+        if color =="basic_red" : 
+            screen.blit(self.arrow_r,pos_tick3r)
+            screen.blit(self.arrow_l,pos_tick3l)
+        
+    def is_clicked(self, event):
+        if self.btn_red.is_clicked(event): return"basic_red"
+        if self.btn_green.is_clicked(event): return "basic_green"
+        if self.btn_purple.is_clicked(event): return "basic_purple"
+        
+    def sound_hover(self):
+        self.btn_red.sound_hover()
+        self.btn_green.sound_hover()
+        self.btn_purple.sound_hover()
+       
+
 class Input_Box:
     def __init__(self, x, y, w, h, font_size=30):
         self.rect = pygame.Rect(x, y, w, h)
@@ -699,6 +762,45 @@ class UI_Score:
                     return self.btn.is_clicked(event), self.t
             pygame.display.flip()
 
+class UI_Color:
+    def __init__(self, clock, screen, t=0):
+        self.screen = screen
+        self.bg = Background_Color()
+        self.btn = Button_Color()
+        self.btn_undo = Button(pos_undo, "btn_undo", width_undo, height_undo)
+        self.clicked = Sound("clicked")
+        self.running = True
+        self.clock = clock
+        self.t = t
+        self.color = "basic_purple"
+
+    def get_color(self):
+        return self.color
+    def run(self):
+        while self.running:
+            self.dt = self.clock.tick(60) / 1000.0
+            self.t += self.dt
+            self.bg.draw(self.screen, self.t)
+            self.btn.is_hover()
+            self.btn_undo.is_hover()
+            self.btn.draw(self.screen)
+            self.btn_undo.draw(self.screen)
+            self.btn.sound_hover()
+            self.btn.draw_tick(self.screen,self.color)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    return "exit", self.t
+                clicked_color = self.btn.is_clicked(event)
+                if clicked_color:
+                    self.clicked.run()
+                    self.color = clicked_color
+                if self.btn_undo.is_clicked(event):
+                    self.clicked.run()
+                    return "undo2",self.t
+            pygame.display.flip()
+
+
 class Slider:
     def __init__(self, pos, width, initial_val=0.5):
         self.pos = pos
@@ -887,7 +989,7 @@ class UI_Manager:
         self.screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
         self.clock = pygame.time.Clock()
         self.T = 0.0
-
+        
         self.transitions = {
             "start": "select",
             "option": "option",
@@ -898,15 +1000,19 @@ class UI_Manager:
             "undo3": "select",
             "return": "user",
             "exit1": "main",
-            "menu": "main"
+            "menu": "main",
+            "color":"color"
+
         }
         self.Load_ui = {
             "main": UI_Main(self.clock, self.screen, t=self.T),
             "select": UI_Select(self.clock, self.screen, t=self.T),
             "rule": UI_Rule(self.clock, self.screen, t=self.T),
             "user": UI_Username(self.clock, self.screen, t=self.T),
-            "option": UI_Option(self.clock, self.screen, t=self.T)
+            "option": UI_Option(self.clock, self.screen, t=self.T),
+            "color": UI_Color(self.clock, self.screen, t=self.T)
         }
+        self.color = self.Load_ui["color"].get_color()
         self.current = "main"
 
     def run(self):
@@ -921,7 +1027,17 @@ class UI_Manager:
                 sys.exit()
             elif result in self.transitions:
                 self.current = self.transitions[result]
-        else:
+        if self.current == "color":
+            result, t = self.Load_ui[self.current].run()
+            self.color = self.Load_ui["color"].get_color()
+            self.T = t
+            if result == "exit":
+                pygame.quit()
+                sys.exit()
+            if result == "undo2":
+                self.current = self.transitions[result]
+
+        if self.current == "user":
             result, t, usn = self.Load_ui[self.current].run()
             self.T = t
             if result == "exit":
@@ -931,7 +1047,7 @@ class UI_Manager:
                 self.current = self.transitions[result]
             elif result == "game":
                 # Start actual game
-                score = Game().run(usn)
+                score = Game(self.color).run(usn)
                 # Show score screen
                 result, t = UI_Score(self.clock, self.screen, t=self.T, player_name=usn, point=score).run()
                 self.T = t
