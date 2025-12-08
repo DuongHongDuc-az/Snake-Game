@@ -22,6 +22,7 @@ class Game:
         self.skin_manager = SkinManager(name_color)
         self.random_food = FoodManager()
         self.load_sounds()
+        self.speed = settings.SPEED
         self.reset()
 
     def load_sounds(self):
@@ -45,6 +46,7 @@ class Game:
                          header_height=self.header_height, 
                          snake_body=self.snake.body)
         self.score = 0
+        self.speed = settings.SPEED
         self.game_over = False
         if settings.SOUND_ON:
             try:
@@ -78,6 +80,9 @@ class Game:
             self.food.position = self.food.random_pos(snake_body=self.snake.body)
 
             self.score += 1
+            self.speed +=0.5
+            if self.speed > 60:
+                self.speed = 60
             if settings.SOUND_ON and self.eat_sound:
                 self.eat_sound.set_volume(settings.SOUND_VOLUME)
                 self.eat_sound.play()
@@ -152,7 +157,7 @@ class Game:
             self.handle_events()
             self.update()
             self.draw(txt)
-            self.clock.tick(15)
+            self.clock.tick(self.speed)
         return self.score
 
 if __name__ == "__main__":
