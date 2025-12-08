@@ -4,7 +4,7 @@ from snake.settings import CELL_SIZE
 from snake.skin import SkinManager
 class Snake:
     def __init__(self, skin_manager):
-        self.body = [[100, 40], [80, 40], [60, 40]]
+        self.body = [[640, 360], [640, 380], [640, 400]]
         self.direction = "RIGHT"
         self.grow_flag = False
         self.skin_manager = skin_manager
