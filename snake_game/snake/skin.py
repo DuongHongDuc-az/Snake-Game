@@ -10,8 +10,8 @@ class SkinManager:
         base_path = f"snake/images/snake/{self.skin_name}/"
         self.head_img = pygame.image.load(base_path + "head.png").convert_alpha()
         self.body_img = pygame.image.load(base_path + "body.png").convert_alpha()
-        self.head_img = pygame.transform.scale(self.head_img, (CELL_SIZE, CELL_SIZE))
-        self.body_img = pygame.transform.scale(self.body_img, (CELL_SIZE, CELL_SIZE))
+        self.head_img = pygame.transform.smoothscale(self.head_img, (CELL_SIZE, CELL_SIZE))
+        self.body_img = pygame.transform.smoothscale(self.body_img, (CELL_SIZE, CELL_SIZE))
 
     def change_skin(self, new_skin):
         self.skin_name = new_skin

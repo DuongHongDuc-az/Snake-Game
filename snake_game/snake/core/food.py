@@ -48,7 +48,7 @@ class FoodManager:
                 path = f"snake/images/foods/{img_name}"
                 if os.path.exists(path):
                     loaded_img = pygame.image.load(path).convert_alpha()
-                    loaded_img = pygame.transform.scale(loaded_img, (CELL_SIZE, CELL_SIZE))
+                    loaded_img = pygame.transform.smoothscale(loaded_img, (CELL_SIZE, CELL_SIZE))
                     self.images.append(loaded_img)
                 else:
                     print(f"Warning: Missing food image at {path}")
