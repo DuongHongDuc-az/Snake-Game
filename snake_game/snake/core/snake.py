@@ -1,11 +1,12 @@
 ﻿import pygame
 import math
-from snake.settings import CELL_SIZE
 from snake.skin import SkinManager
 
 class Snake:
-    def __init__(self, skin_manager):
-        self.body = [[640, 360], [620, 360], [600, 360]]
+    def __init__(self, skin_manager, start_pos, cell_size):
+        self.cell_size = cell_size
+        x, y = start_pos
+        self.body = [[x, y], [x - cell_size, y], [x - 2*cell_size, y]]
         self.direction = "RIGHT"
         
         self.grow_flag = False
@@ -25,13 +26,13 @@ class Snake:
     def move(self):
         head_x, head_y = self.body[0]
         if self.direction == "UP":
-            head_y -= CELL_SIZE
+            head_y -= self.cell_size
         elif self.direction == "DOWN":
-            head_y += CELL_SIZE
+            head_y += self.cell_size
         elif self.direction == "LEFT":
-            head_x -= CELL_SIZE
+            head_x -= self.cell_size
         elif self.direction == "RIGHT":
-            head_x += CELL_SIZE
+            head_x += self.cell_size
 
         new_head = [head_x, head_y]
         self.body.insert(0, new_head)
@@ -50,25 +51,29 @@ class Snake:
         current_time = pygame.time.get_ticks()
         if current_time % self.tongue_interval < 200:
             head_x, head_y = self.body[0]
-            center_x = head_x + CELL_SIZE // 2
-            center_y = head_y + CELL_SIZE // 2
+            cs = self.cell_size
+            center_x = head_x + cs // 2
+            center_y = head_y + cs // 2
             tongue_color = (255, 50, 50) 
             start_pos = (center_x, center_y)
             end_pos = start_pos 
             
+            offset_short = max(1, cs // 4)
+            offset_long = max(1, int(cs * 0.6))
+
             if self.direction == "UP":
-                start_pos = (center_x, head_y + 5)
-                end_pos = (center_x, head_y - 12)
+                start_pos = (center_x, head_y + offset_short)
+                end_pos = (center_x, head_y - offset_long)
             elif self.direction == "DOWN":
-                start_pos = (center_x, head_y + CELL_SIZE - 5)
-                end_pos = (center_x, head_y + CELL_SIZE + 12)
+                start_pos = (center_x, head_y + cs - offset_short)
+                end_pos = (center_x, head_y + cs + offset_long)
             elif self.direction == "LEFT":
-                start_pos = (head_x + 5, center_y)
-                end_pos = (head_x - 12, center_y)
+                start_pos = (head_x + offset_short, center_y)
+                end_pos = (head_x - offset_long, center_y)
             elif self.direction == "RIGHT":
-                start_pos = (head_x + CELL_SIZE - 5, center_y)
-                end_pos = (head_x + CELL_SIZE + 12, center_y)
-            pygame.draw.line(screen, tongue_color, start_pos, end_pos, 3)
+                start_pos = (head_x + cs - offset_short, center_y)
+                end_pos = (head_x + cs + offset_long, center_y)
+            pygame.draw.line(screen, tongue_color, start_pos, end_pos, max(1, cs // 7))
 
     def draw(self, screen, food_pos=None):
         self.draw_tongue(screen)
@@ -76,15 +81,16 @@ class Snake:
         if food_pos:
             head_x, head_y = self.body[0]
             distance = math.hypot(head_x - food_pos[0], head_y - food_pos[1])
-            if distance < CELL_SIZE*4:
+            if distance < self.cell_size * 4:
                 open_mouth = True
+        
         for i, pos in enumerate(self.body):
             if i == 0:
                 head_surf = self.skin_manager.head_img.copy()
                 if open_mouth:
                     w,h  = head_surf.get_size()
                     pygame.draw.polygon(head_surf, (50, 0, 0), [(w, h//2), (w, 0), (w-w//2, h//2), (w, h)])
-                rotated_head = self.skin_manager.head_img
+                rotated_head = head_surf
                 if self.direction == "UP": rotated_head = pygame.transform.rotate(rotated_head, 90)
                 elif self.direction == "DOWN": rotated_head = pygame.transform.rotate(rotated_head, -90)
                 elif self.direction == "LEFT": rotated_head = pygame.transform.rotate(rotated_head, 180)
@@ -95,10 +101,14 @@ class Snake:
     def get_head_pos(self):
         return tuple(self.body[0])
 
-    def check_collision(self, width, height):
+    def check_collision(self, bounds):
         head_x, head_y = self.body[0]
-        if head_x < 0 or head_x >= width or head_y < 0 or head_y >= height:
+        bx, by, bw, bh = bounds
+        
+        if head_x < bx or head_x >= bx + bw or head_y < by or head_y >= by + bh:
             return True
+        
         if [head_x, head_y] in self.body[1:]:
             return True
+            
         return False

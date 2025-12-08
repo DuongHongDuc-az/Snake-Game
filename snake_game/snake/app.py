@@ -15,12 +15,23 @@ class Game:
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Snake Game")
         self.header_height = 60 
+        mode_name, grid_cols, grid_rows = settings.GRID_MODES[settings.GRID_INDEX]
+        available_w = self.width
+        available_h = self.height - self.header_height
+        cell_w = available_w // grid_cols
+        cell_h = available_h // grid_rows
+        self.cell_size = min(cell_w, cell_h)
+        self.play_width = self.cell_size * grid_cols
+        self.play_height = self.cell_size * grid_rows
+        self.offset_x = (self.width - self.play_width) // 2
+        self.offset_y = self.header_height + (available_h - self.play_height) // 2
+        self.bounds = (self.offset_x, self.offset_y, self.play_width, self.play_height)
 
         self.clock = pygame.time.Clock()
         self.running = True
         
-        self.skin_manager = SkinManager(name_color)
-        self.random_food = FoodManager()
+        self.skin_manager = SkinManager(name_color,self.cell_size )
+        self.random_food = FoodManager(self.cell_size)
         self.load_sounds()
         self.speed = settings.SPEED
         self.reset()
@@ -41,10 +52,12 @@ class Game:
             print(f"Error audio: {e}")
 
     def reset(self):
-        self.snake = Snake(self.skin_manager)
-        self.food = Food(self.width, self.height, self.random_food, 
-                         header_height=self.header_height, 
-                         snake_body=self.snake.body)
+        start_col = (self.play_width // self.cell_size) // 2
+        start_row = (self.play_height // self.cell_size) // 2
+        start_x = self.offset_x + start_col * self.cell_size
+        start_y = self.offset_y + start_row * self.cell_size
+        self.snake = Snake(self.skin_manager,(start_x, start_y), self.cell_size)
+        self.food = Food(self.random_food, self.bounds, self.cell_size, snake_body=self.snake.body)
         self.score = 0
         self.speed = settings.SPEED
         self.game_over = False
@@ -87,14 +100,7 @@ class Game:
                 self.eat_sound.set_volume(settings.SOUND_VOLUME)
                 self.eat_sound.play()
             return
-
-        head_x, head_y = self.snake.get_head_pos()
-
-        if head_y < self.header_height:
-            self.trigger_game_over()
-            return
-
-        if self.snake.check_collision(self.width, self.height):
+        if self.snake.check_collision(self.bounds):
             self.trigger_game_over()
 
     def trigger_game_over(self):
@@ -109,18 +115,21 @@ class Game:
     def draw_grass(self):
         grass_color_1 = (167, 209, 61)
         grass_color_2 = (175, 215, 70)
-        cell_size = settings.CELL_SIZE
-        start_row = self.header_height // cell_size
+        self.screen.fill((30, 30, 30))
+        cols = self.play_width // self.cell_size
+        rows = self.play_height // self.cell_size
         
-        for row in range (start_row, self.height//cell_size):
-            for col in range(self.width//cell_size):
+        for row in range (rows):
+            for col in range(cols):
                 if (row+col)%2==0:
                     color = grass_color_1
                 else:
                     color = grass_color_2
-                rect = pygame.Rect(col*cell_size, row*cell_size, cell_size, cell_size)
+                rect_x = self.offset_x + col * self.cell_size
+                rect_y = self.offset_y + row * self.cell_size
+                rect = pygame.Rect(rect_x, rect_y, self.cell_size, self.cell_size)
                 pygame.draw.rect(self.screen, color, rect)
-
+        pygame.draw.rect(self.screen, (255, 255, 255), self.bounds, 2)
     def draw_header(self, usn):
         pygame.draw.rect(self.screen, (40, 50, 60), (0, 0, self.width, self.header_height))
         pygame.draw.line(self.screen, (255, 255, 255), (0, self.header_height), (self.width, self.header_height), 2)
