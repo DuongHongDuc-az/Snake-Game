@@ -17,7 +17,7 @@ LANGUAGE = "EN"
 GRID_MODES = [
     ("Normal", 64, 33),
     ("10x10", 10, 10),
-    ("5x5", 20, 20)
+    ("20x20", 20, 20)
 ]
 GRID_INDEX = 0
 TEXTS = {
