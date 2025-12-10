@@ -876,12 +876,18 @@ class UI_Option:
         y_row1 = center_y - 140
         self.pos_icon_vol = self.icon_vol.get_rect(center=(x_icon, y_row1))
         current_vol = getattr(settings, 'SOUND_VOLUME', 0.5)
-        self.slider = Slider((x_control, y_row1 - 5), 300, current_vol)
+        self.slider = Slider((x_control+50, y_row1 +130), 200, current_vol)
         
         y_row2 = center_y - 40
         self.pos_icon_music = self.icon_music.get_rect(center=(x_icon, y_row2))
-        self.btn_sound = Button((x_control + 70, y_row2), "btn_audio", 140, 55) 
-        
+        self.btn_sound = Button((x_control - 50, y_row2+30), "btn_audio", 140, 55)
+        self.btn_sound_off = Button((x_control -50 , y_row2+30), "btn_audio.off", 140, 55)
+       
+        self.audio = {
+            "on":self.btn_sound,
+            "off":self.btn_sound_off
+            }
+
         y_row3 = center_y + 60
         self.pos_icon_lang = self.icon_lang.get_rect(center=(x_icon, y_row3))
         self.lang_rect = pygame.Rect(x_control, y_row3 - 25, 300, 50)
@@ -908,10 +914,7 @@ class UI_Option:
                 self.t += self.dt
                 self.bg.draw(self.screen, self.t)
                 
-                self.screen.blit(self.icon_vol, self.pos_icon_vol)
-                self.screen.blit(self.icon_music, self.pos_icon_music)
-                self.screen.blit(self.icon_lang, self.pos_icon_lang)
-                self.screen.blit(self.icon_board, self.pos_icon_board)
+               
                 
                 font = self.get_font() 
                 
@@ -920,12 +923,15 @@ class UI_Option:
                 vol_surf = font.render(f"{vol_pct}%", True, (80, 80, 80))
                 self.screen.blit(vol_surf, (self.slider.pos[0] + self.slider.width + 15, self.slider.pos[1] - 15))
 
-                self.btn_sound.is_hover() 
-                self.btn_sound.draw(self.screen)
-                status = "ON" if settings.SOUND_ON else "OFF"
-                color = (0, 150, 0) if settings.SOUND_ON else (200, 0, 0)
-                stat_surf = font.render(status, True, color)
-                self.screen.blit(stat_surf, (self.btn_sound.rect.right + 15, self.btn_sound.rect.centery - 18))
+                self.audio["on"].is_hover() 
+                self.audio["on"].sound_hover()
+                self.audio["off"].is_hover()
+                self.audio["off"].sound_hover()
+
+                self.audio["on"].draw(self.screen) if settings.SOUND_ON else self.audio["off"].draw(self.screen)
+                # color = (0, 150, 0) if settings.SOUND_ON else (200, 0, 0)
+                # stat_surf = font.render(status, True, color)
+                # self.screen.blit(stat_surf, (self.btn_sound.rect.right + 15, self.btn_sound.rect.centery - 18))
 
                 if self.lang_rect.collidepoint(pygame.mouse.get_pos()):
                     pygame.draw.rect(self.screen, (200, 200, 200), self.lang_rect, border_radius=10)
