@@ -9,7 +9,7 @@ class Snake:
         self.body = [[x, y], [x - cell_size, y], [x - 2*cell_size, y]]
         self.direction = "RIGHT"
         
-        self.grow_flag = False
+        self.grow_counter = 0
         self.skin_manager = skin_manager
         self.tongue_interval = 3000
         self.can_change_dir = True 
@@ -37,15 +37,15 @@ class Snake:
         new_head = [head_x, head_y]
         self.body.insert(0, new_head)
 
-        if self.grow_flag:
-            self.grow_flag = False
+        if self.grow_counter > 0:
+            self.grow_counter -= 1 
         else:
             self.body.pop()
             
         self.can_change_dir = True
 
     def grow(self):
-        self.grow_flag = True
+        self.grow_counter += 1
 
     def draw_tongue(self, screen):
         current_time = pygame.time.get_ticks()

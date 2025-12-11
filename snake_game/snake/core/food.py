@@ -69,3 +69,59 @@ class FoodManager:
             fallback_surf = pygame.Surface((self.cell_size, self.cell_size), pygame.SRCALPHA)
             pygame.draw.circle(fallback_surf, (255, 0, 0), (self.cell_size//2,self.cell_size//2), self.cell_size//2)
             self.images.append(fallback_surf)
+class SpecialFood(Food):
+    _loaded_images = []
+
+    @classmethod
+    def preload_images(cls, cell_size):
+        if not cls._loaded_images:
+            image_files = ["apple_sp.png", "grape_sp.png", "banana_sp.png", "orange_sp.png"]
+            base_path = "snake/images/special/"
+            
+            for file_name in image_files:
+                full_path = base_path + file_name
+                if os.path.exists(full_path):
+                    try:
+                        img = pygame.image.load(full_path).convert_alpha()
+                        img = pygame.transform.scale(img, (cell_size, cell_size))
+                        cls._loaded_images.append(img)
+                        print(f"Loaded: {file_name}")
+                    except Exception as e:
+                        print(f"Error loading {file_name}: {e}")
+            
+            if not cls._loaded_images:
+                fallback = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
+                pygame.draw.circle(fallback, (255, 215, 0), (cell_size//2, cell_size//2), cell_size//2)
+                cls._loaded_images.append(fallback)
+
+    def __init__(self, food_manager, bounds, cell_size, snake_body):
+        super().__init__(food_manager, bounds, cell_size, snake_body)
+        
+        if not SpecialFood._loaded_images:
+            SpecialFood.preload_images(cell_size)
+
+        self.image = random.choice(SpecialFood._loaded_images)
+        self.spawn_time = pygame.time.get_ticks()
+        self.lifetime = 10000
+
+    def is_expired(self):
+        return pygame.time.get_ticks() - self.spawn_time > self.lifetime
+
+    def draw(self, surface):
+        t = pygame.time.get_ticks()
+        scale = 1.0 + 0.1 * math.sin(t * 0.005)
+        base_size = self.image.get_width()
+        new_size = int(base_size * scale)
+        if new_size < 1: new_size = 1
+        
+        scaled_img = pygame.transform.scale(self.image, (new_size, new_size))
+        
+        flash_alpha = int(60 * (1 + math.sin(t * 0.015))) 
+        mask = pygame.mask.from_surface(scaled_img)
+        white_surf = mask.to_surface(setcolor=(255, 255, 255, flash_alpha), unsetcolor=None)
+        scaled_img.blit(white_surf, (0, 0))
+
+        center_x = self.position[0] + self.cell_size // 2
+        center_y = self.position[1] + self.cell_size // 2
+        rect = scaled_img.get_rect(center=(center_x, center_y))
+        surface.blit(scaled_img, rect)

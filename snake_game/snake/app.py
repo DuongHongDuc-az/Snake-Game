@@ -2,8 +2,9 @@
 import sys
 import os
 import random
+import math
 from snake.core.snake import Snake
-from snake.core.food import Food, FoodManager
+from snake.core.food import Food, FoodManager, SpecialFood
 from snake.settings import CELL_SIZE, TEXTS
 from snake.skin import SkinManager 
 import snake.settings as settings
@@ -32,6 +33,7 @@ class Game:
         
         self.skin_manager = SkinManager(name_color,self.cell_size )
         self.random_food = FoodManager(self.cell_size)
+        SpecialFood.preload_images(self.cell_size)
         self.load_sounds()
         self.speed = settings.SPEED
         self.reset()
@@ -58,6 +60,7 @@ class Game:
         start_y = self.offset_y + start_row * self.cell_size
         self.snake = Snake(self.skin_manager,(start_x, start_y), self.cell_size)
         self.food = Food(self.random_food, self.bounds, self.cell_size, snake_body=self.snake.body)
+        self.special_food = None
         self.score = 0
         self.speed = settings.SPEED
         self.game_over = False
@@ -87,19 +90,38 @@ class Game:
 
         self.snake.move()
         
+        if self.special_food:
+            if self.special_food.is_expired():
+                self.special_food = None
+            elif self.snake.get_head_pos() == self.special_food.position:
+                self.score += 5                 
+                self.speed += 0.5  
+                if self.speed > 60: self.speed = 60
+                
+                for _ in range(3): 
+                    self.snake.grow()
+                
+                self.special_food = None
+                if settings.SOUND_ON and self.eat_sound:
+                    self.eat_sound.play()
+
         if self.snake.get_head_pos() == self.food.position:
             self.snake.grow()
+            
             self.food.image = random.choice(self.random_food.images)
             self.food.position = self.food.random_pos(snake_body=self.snake.body)
 
             self.score += 1
-            self.speed +=0.5
-            if self.speed > 60:
-                self.speed = 60
+            self.speed += 0.5
+            if self.speed > 60: self.speed = 60
+            
+            if self.special_food is None and random.random() < 0.25:
+                self.special_food = SpecialFood(self.random_food, self.bounds, self.cell_size, self.snake.body)
+
             if settings.SOUND_ON and self.eat_sound:
-                self.eat_sound.set_volume(settings.SOUND_VOLUME)
                 self.eat_sound.play()
             return
+
         if self.snake.check_collision(self.bounds):
             self.trigger_game_over()
 
@@ -113,8 +135,8 @@ class Game:
         self.running = False
 
     def draw_grass(self):
-        grass_color_1 = (167, 209, 61)
-        grass_color_2 = (175, 215, 70)
+        grass_color_1 = (60, 90, 40)
+        grass_color_2 = (80, 110, 55)
         self.screen.fill((30, 30, 30))
         cols = self.play_width // self.cell_size
         rows = self.play_height // self.cell_size
@@ -156,7 +178,22 @@ class Game:
 
     def draw(self, usn):
         self.draw_grass()
-        self.snake.draw(self.screen, self.food.position)
+        
+        if self.special_food:
+            self.special_food.draw(self.screen)
+        
+        target_pos = self.food.position
+        
+        if self.special_food:
+            head_x, head_y = self.snake.get_head_pos()
+            dist_normal = math.hypot(head_x - self.food.position[0], head_y - self.food.position[1])
+            dist_special = math.hypot(head_x - self.special_food.position[0], head_y - self.special_food.position[1])
+            
+            if dist_special < dist_normal:
+                target_pos = self.special_food.position
+        
+        self.snake.draw(self.screen, target_pos)
+        
         self.food.draw(self.screen)
         self.draw_header(usn)
         pygame.display.flip()
