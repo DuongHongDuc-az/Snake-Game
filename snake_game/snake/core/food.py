@@ -6,100 +6,79 @@ from snake.settings import FOOD_IMAGES
 
 class Food:
     def __init__(self, food_manager, bounds, cell_size, snake_body=None):
-        self.bounds = bounds #(x, y, w, h)
+        self.bounds = bounds 
         self.cell_size = cell_size
-        
-        if not food_manager.images:
-            self.image = pygame.Surface((cell_size, cell_size))
-            self.image.fill((255, 0, 0)) 
-        else:
-            self.image = random.choice(food_manager.images)
+        self.image = random.choice(food_manager.images) if food_manager.images else self._get_fallback()
         self.position = self.random_pos(snake_body)
+
+    def _get_fallback(self):
+        s = pygame.Surface((self.cell_size, self.cell_size))
+        s.fill((255, 0, 0))
+        return s
 
     def random_pos(self, snake_body=None):
         start_x, start_y, width, height = self.bounds
-        cols = width //self.cell_size
-        rows = height//self.cell_size
+        cols, rows = width // self.cell_size, height // self.cell_size
 
         while True:
-            rand_col = random.randint(0, cols-1) 
-            rand_row = random.randint(0, rows-1) 
-            x = start_x + rand_col*self.cell_size
-            y = start_y + rand_row*self.cell_size
-            if snake_body is None:
-                return (x, y)
+            x = start_x + random.randint(0, cols - 1) * self.cell_size
+            y = start_y + random.randint(0, rows - 1) * self.cell_size
             
-            is_on_snake = False
-            for block in snake_body:
-                if int(block[0]) == x and int(block[1]) == y:
-                    is_on_snake = True
-                    break
-            
-            if not is_on_snake:
+            if snake_body is None or [x, y] not in snake_body:
                 return (x, y)
 
     def draw(self, surface):
+        t = pygame.time.get_ticks()
+        scale = 1.0 + 0.1 * math.sin(t * 0.005)
+        new_size = max(1, int(self.image.get_width() * scale))
+        
         try:
-            t = pygame.time.get_ticks()
-            scale = 1.0 + 0.1 * math.sin(t * 0.005)
-            base_size = self.image.get_width()
-            new_size = int(base_size * scale)
-            if new_size < 1: new_size = 1
-            scaled_img = pygame.transform.smoothscale(self.image, (new_size, new_size))
-            center_x = self.position[0] + self.cell_size // 2
-            center_y = self.position[1] + self.cell_size // 2
-            rect = scaled_img.get_rect(center=(center_x, center_y))
-            surface.blit(scaled_img, rect)
-        except Exception:
+            scaled = pygame.transform.smoothscale(self.image, (new_size, new_size))
+            center = (self.position[0] + self.cell_size//2, self.position[1] + self.cell_size//2)
+            surface.blit(scaled, scaled.get_rect(center=center))
+        except:
             surface.blit(self.image, self.position)
 
 class FoodManager:
     def __init__(self, cell_size):
         self.images = []
-        for img_name in FOOD_IMAGES:
+        base = "snake/images/foods/"
+        for name in FOOD_IMAGES:
             try:
-                path = f"snake/images/foods/{img_name}"
-                if os.path.exists(path):
-                    loaded_img = pygame.image.load(path).convert_alpha()
-                    loaded_img = pygame.transform.scale(loaded_img, (cell_size, cell_size))
-                    self.images.append(loaded_img)
-            except Exception as e:
-                print(f"Error loading food {img_name}: {e}")
+                if os.path.exists(base + name):
+                    img = pygame.image.load(base + name).convert_alpha()
+                    self.images.append(pygame.transform.scale(img, (cell_size, cell_size)))
+            except: pass
+        
         if not self.images:
-            fallback_surf = pygame.Surface((self.cell_size, self.cell_size), pygame.SRCALPHA)
-            pygame.draw.circle(fallback_surf, (255, 0, 0), (self.cell_size//2,self.cell_size//2), self.cell_size//2)
-            self.images.append(fallback_surf)
+            fallback = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
+            pygame.draw.circle(fallback, (255, 0, 0), (cell_size//2, cell_size//2), cell_size//2)
+            self.images.append(fallback)
+
 class SpecialFood(Food):
     _loaded_images = []
 
     @classmethod
     def preload_images(cls, cell_size):
+        if cls._loaded_images: return
+        
+        names = ["apple_sp.png", "grape_sp.png", "banana_sp.png", "orange_sp.png"]
+        base = "snake/images/special/"
+        for name in names:
+            try:
+                if os.path.exists(base + name):
+                    img = pygame.image.load(base + name).convert_alpha()
+                    cls._loaded_images.append(pygame.transform.scale(img, (cell_size, cell_size)))
+            except: pass
+
         if not cls._loaded_images:
-            image_files = ["apple_sp.png", "grape_sp.png", "banana_sp.png", "orange_sp.png"]
-            base_path = "snake/images/special/"
-            
-            for file_name in image_files:
-                full_path = base_path + file_name
-                if os.path.exists(full_path):
-                    try:
-                        img = pygame.image.load(full_path).convert_alpha()
-                        img = pygame.transform.scale(img, (cell_size, cell_size))
-                        cls._loaded_images.append(img)
-                        print(f"Loaded: {file_name}")
-                    except Exception as e:
-                        print(f"Error loading {file_name}: {e}")
-            
-            if not cls._loaded_images:
-                fallback = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
-                pygame.draw.circle(fallback, (255, 215, 0), (cell_size//2, cell_size//2), cell_size//2)
-                cls._loaded_images.append(fallback)
+            fb = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
+            pygame.draw.circle(fb, (255, 215, 0), (cell_size//2, cell_size//2), cell_size//2)
+            cls._loaded_images.append(fb)
 
     def __init__(self, food_manager, bounds, cell_size, snake_body):
         super().__init__(food_manager, bounds, cell_size, snake_body)
-        
-        if not SpecialFood._loaded_images:
-            SpecialFood.preload_images(cell_size)
-
+        if not SpecialFood._loaded_images: SpecialFood.preload_images(cell_size)
         self.image = random.choice(SpecialFood._loaded_images)
         self.spawn_time = pygame.time.get_ticks()
         self.lifetime = 10000
@@ -109,19 +88,12 @@ class SpecialFood(Food):
 
     def draw(self, surface):
         t = pygame.time.get_ticks()
-        scale = 1.0 + 0.1 * math.sin(t * 0.005)
-        base_size = self.image.get_width()
-        new_size = int(base_size * scale)
-        if new_size < 1: new_size = 1
+        new_size = max(1, int(self.image.get_width() * (1.0 + 0.1 * math.sin(t * 0.005))))
+        scaled = pygame.transform.scale(self.image, (new_size, new_size))
         
-        scaled_img = pygame.transform.scale(self.image, (new_size, new_size))
-        
-        flash_alpha = int(60 * (1 + math.sin(t * 0.015))) 
-        mask = pygame.mask.from_surface(scaled_img)
-        white_surf = mask.to_surface(setcolor=(255, 255, 255, flash_alpha), unsetcolor=None)
-        scaled_img.blit(white_surf, (0, 0))
+        mask = pygame.mask.from_surface(scaled)
+        white = mask.to_surface(setcolor=(255, 255, 255, int(60 * (1 + math.sin(t * 0.015)))), unsetcolor=None)
+        scaled.blit(white, (0, 0))
 
-        center_x = self.position[0] + self.cell_size // 2
-        center_y = self.position[1] + self.cell_size // 2
-        rect = scaled_img.get_rect(center=(center_x, center_y))
-        surface.blit(scaled_img, rect)
+        center = (self.position[0] + self.cell_size//2, self.position[1] + self.cell_size//2)
+        surface.blit(scaled, scaled.get_rect(center=center))

@@ -14,6 +14,17 @@ class Snake:
         self.tongue_interval = 3000
         self.can_change_dir = True 
 
+    def handle_input(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                self.change_direction("UP")
+            elif event.key == pygame.K_DOWN:
+                self.change_direction("DOWN")
+            elif event.key == pygame.K_LEFT:
+                self.change_direction("LEFT")
+            elif event.key == pygame.K_RIGHT:
+                self.change_direction("RIGHT")
+
     def change_direction(self, new_direction):
         if not self.can_change_dir:
             return
@@ -43,6 +54,16 @@ class Snake:
             self.body.pop()
             
         self.can_change_dir = True
+
+    def check_eat(self, food_pos, is_special=False):
+        if self.get_head_pos() == food_pos:
+            if is_special:
+                for _ in range(3):
+                    self.grow()
+            else:
+                self.grow()
+            return True
+        return False
 
     def grow(self):
         self.grow_counter += 1
@@ -75,12 +96,21 @@ class Snake:
                 end_pos = (head_x + cs + offset_long, center_y)
             pygame.draw.line(screen, tongue_color, start_pos, end_pos, max(1, cs // 7))
 
-    def draw(self, screen, food_pos=None):
+    def draw(self, screen, food_pos, special_food_pos=None):
         self.draw_tongue(screen)
+        
+        target = food_pos
+        head_x, head_y = self.body[0]
+        
+        if special_food_pos:
+            dist_normal = math.hypot(head_x - food_pos[0], head_y - food_pos[1])
+            dist_special = math.hypot(head_x - special_food_pos[0], head_y - special_food_pos[1])
+            if dist_special < dist_normal:
+                target = special_food_pos
+
         open_mouth = False
-        if food_pos:
-            head_x, head_y = self.body[0]
-            distance = math.hypot(head_x - food_pos[0], head_y - food_pos[1])
+        if target:
+            distance = math.hypot(head_x - target[0], head_y - target[1])
             if distance < self.cell_size * 4:
                 open_mouth = True
         

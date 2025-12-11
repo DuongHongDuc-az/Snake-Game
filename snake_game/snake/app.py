@@ -31,7 +31,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         
-        self.skin_manager = SkinManager(name_color,self.cell_size )
+        self.skin_manager = SkinManager(name_color, self.cell_size)
         self.random_food = FoodManager(self.cell_size)
         SpecialFood.preload_images(self.cell_size)
         self.load_sounds()
@@ -73,15 +73,8 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.snake.change_direction("UP")
-                elif event.key == pygame.K_DOWN:
-                    self.snake.change_direction("DOWN")
-                elif event.key == pygame.K_LEFT:
-                    self.snake.change_direction("LEFT")
-                elif event.key == pygame.K_RIGHT:
-                    self.snake.change_direction("RIGHT")
+            else:
+                self.snake.handle_input(event)
 
     def update(self):
         if self.game_over:
@@ -93,21 +86,16 @@ class Game:
         if self.special_food:
             if self.special_food.is_expired():
                 self.special_food = None
-            elif self.snake.get_head_pos() == self.special_food.position:
+            elif self.snake.check_eat(self.special_food.position, is_special=True):
                 self.score += 5                 
                 self.speed += 0.5  
                 if self.speed > 60: self.speed = 60
-                
-                for _ in range(3): 
-                    self.snake.grow()
                 
                 self.special_food = None
                 if settings.SOUND_ON and self.eat_sound:
                     self.eat_sound.play()
 
-        if self.snake.get_head_pos() == self.food.position:
-            self.snake.grow()
-            
+        if self.snake.check_eat(self.food.position, is_special=False):
             self.food.image = random.choice(self.random_food.images)
             self.food.position = self.food.random_pos(snake_body=self.snake.body)
 
@@ -152,6 +140,7 @@ class Game:
                 rect = pygame.Rect(rect_x, rect_y, self.cell_size, self.cell_size)
                 pygame.draw.rect(self.screen, color, rect)
         pygame.draw.rect(self.screen, (255, 255, 255), self.bounds, 2)
+
     def draw_header(self, usn):
         pygame.draw.rect(self.screen, (40, 50, 60), (0, 0, self.width, self.header_height))
         pygame.draw.line(self.screen, (255, 255, 255), (0, self.header_height), (self.width, self.header_height), 2)
@@ -182,17 +171,8 @@ class Game:
         if self.special_food:
             self.special_food.draw(self.screen)
         
-        target_pos = self.food.position
-        
-        if self.special_food:
-            head_x, head_y = self.snake.get_head_pos()
-            dist_normal = math.hypot(head_x - self.food.position[0], head_y - self.food.position[1])
-            dist_special = math.hypot(head_x - self.special_food.position[0], head_y - self.special_food.position[1])
-            
-            if dist_special < dist_normal:
-                target_pos = self.special_food.position
-        
-        self.snake.draw(self.screen, target_pos)
+        sp_pos = self.special_food.position if self.special_food else None
+        self.snake.draw(self.screen, self.food.position, sp_pos)
         
         self.food.draw(self.screen)
         self.draw_header(usn)
