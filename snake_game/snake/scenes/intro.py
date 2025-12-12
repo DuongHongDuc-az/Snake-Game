@@ -584,7 +584,7 @@ class Input_Box:
 
 class Username_Menu:
     def __init__(self, pos):
-        self.input_box = Input_Box(pos[0], pos[1], 500, 40)
+        self.input_box = Input_Box(pos[0]+50, pos[1], 400, 40)
 
     def handle_event(self, event):
         self.input_box.handle_event(event)
@@ -1032,7 +1032,7 @@ class UI_Manager:
     def run(self):
         self.Load_ui[self.current].t = self.T
         
-        if self.current != "user":
+        if (self.current != "user") and (self.current != "color"):
             result, t = self.Load_ui[self.current].run()
             self.T = t
             if result == "exit":
