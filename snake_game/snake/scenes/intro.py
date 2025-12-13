@@ -7,6 +7,7 @@ from pygame.time import Clock
 from snake.settings import TEXTS
 try:
     from snake.app import Game
+    from snake.rl import main
     import snake.settings as settings
 except ImportError:
     print("Warning: snake.app or snake.settings not found. Using mock data.")
@@ -793,6 +794,19 @@ class UI_Color:
                     return "undo2",self.t
             pygame.display.flip()
 
+# class UI_AI:
+#     def __init__(self, clock, screen, t):
+#         self.screen = screen
+#         self.clock = clock
+#         self.running = True
+#         self.t = t
+#         self.clicked = Sound("clicked")
+       
+
+#     def run(self):
+#         return "game_ai", self.t
+                
+
 
 class Slider:
     def __init__(self, pos, width, initial_val=0.5):
@@ -834,6 +848,7 @@ class Slider:
         pygame.draw.rect(screen, self.color_knob, fill_rect, border_radius=5)
         pygame.draw.circle(screen, (255, 255, 255), (int(self.knob_pos[0]), int(self.knob_pos[1])), self.knob_radius)
         pygame.draw.circle(screen, self.color_knob, (int(self.knob_pos[0]), int(self.knob_pos[1])), self.knob_radius - 3)
+
 
 # --- Cập nhật Class Background_Option (Dùng khung trắng) ---
 class Background_Option:
@@ -1008,6 +1023,7 @@ class UI_Manager:
             "start": "select",
             "option": "option",
             "player": "user",
+            "ai": "ai",
             "rule": "rule",
             "undo1": "main",
             "undo2": "select",
@@ -1022,6 +1038,7 @@ class UI_Manager:
             "main": UI_Main(self.clock, self.screen, t=self.T),
             "select": UI_Select(self.clock, self.screen, t=self.T),
             "rule": UI_Rule(self.clock, self.screen, t=self.T),
+            # "ai": UI_AI(self.clock, self.screen, t=self.T),
             "user": UI_Username(self.clock, self.screen, t=self.T),
             "option": UI_Option(self.clock, self.screen, t=self.T),
             "color": UI_Color(self.clock, self.screen, t=self.T)
@@ -1067,6 +1084,27 @@ class UI_Manager:
                     sys.exit()
                 elif result in self.transitions:
                     self.current = self.transitions[result]
+
+        # ==== AI: chạy game trực tiếp ====
+        if self.current == "ai":
+            score = main("AI")
+
+            result, t = UI_Score(
+                self.clock,
+                self.screen,
+                t=self.T,
+                player_name="AI",
+                point=score
+            ).run()
+
+            self.T = t
+        if result == "exit":
+            pygame.quit()
+            sys.exit()
+        elif result in self.transitions:
+            self.current = self.transitions[result]
+
+
 
 if __name__ == "__main__":
     manager = UI_Manager()
