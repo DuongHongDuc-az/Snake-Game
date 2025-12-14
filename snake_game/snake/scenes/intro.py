@@ -30,9 +30,9 @@ pos_star = (320, 420)
 pos_option = (320, 530)
 pos_exit = (320, 630)
 pos_undo = (80, 80)
-pos_player = (640, 270)
-pos_bot = (640, 370)
-pos_rule = (640, 470)
+pos_player = (640, 250)
+pos_bot = (640, 350)
+pos_rule = (640, 450)
 pos_color = (1180, 600)
 pos_submit = (640, 440)
 pos_inputBox = (390, 325)
@@ -275,7 +275,7 @@ class Background_Main:
 class Background_Select:
     def __init__(self):
         self.base = BackgroundLayer("bg_1", use_alpha=False, scale_factor=1.2, rot_deg=4, period=10.0)
-        self.board = BackgroundLayer("bg_2.board", use_alpha=True)
+        self.board = BackgroundLayer("bg_2.board", use_alpha=True,scale_factor=1.1)
 
     def draw(self, screen, t):
         self.base.draw(screen, t)
