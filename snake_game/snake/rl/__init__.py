@@ -145,7 +145,7 @@ class Game:
                 self.eat_sound.play()
             return reward, self.game_over, self.score
 
-        if self.is_collision(self.bounds) or self.frame_iteration > 500*self.snake.length:
+        if self.is_collision(self.bounds) or self.frame_iteration > 600*self.snake.length:
             reward = -10
             self.trigger_game_over()
             return reward, self.game_over, self.score

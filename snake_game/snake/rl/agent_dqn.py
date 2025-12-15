@@ -15,18 +15,24 @@ class Direction(Enum):
 
 Point = namedtuple("Point", ["x", "y"])
 
-MAX_MEMORY = 100000
-BATCH_SIZE = 1000
+MAX_MEMORY = 200000
+BATCH_SIZE = 2000
 LR = 0.001
 
 class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0 #for randomness
+        self.load_completed = False
         self.gamma = 0.9 #discount rate
         self.memory = deque(maxlen=MAX_MEMORY)
         self.model = Linear_QNet(11,256,3)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
+        # if self.model.load():
+        #     self.load_completed = True
+        #     print('Load completed')
+        # else:
+        #     print('Load failed')
 
     def get_state(self, game):
         headx, heady = game.snake.body[0]
@@ -82,7 +88,7 @@ class Agent:
 
     def get_action(self, state):
         #The more games we have, the less likely random values will fall below the epsilon, and when epsilon becomes negative, we no longer use random move.
-        self.epsilon = 400 - self.n_games
+        self.epsilon = 400 - self.n_games if not self.load_completed else 100
         final_move = [0, 0, 0]
         if random.randint(0, 1000) < self.epsilon:
             move = random.randint(0, 2)
