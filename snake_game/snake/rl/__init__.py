@@ -5,9 +5,12 @@ import random
 import math
 from snake.core.snake import Snake
 from snake.core.food import Food, FoodManager, SpecialFood
-from snake.settings import CELL_SIZE, TEXTS
-from snake.skin import SkinManager 
+from snake.skin import SkinManager
+import numpy as np
 import snake.settings as settings
+from snake.rl.train_dqn import train
+
+SPEED = 60
 
 class Game:
     def __init__(self, name_color="Basic_purple"):
@@ -35,7 +38,7 @@ class Game:
         self.random_food = FoodManager(self.cell_size)
         SpecialFood.preload_images(self.cell_size)
         self.load_sounds()
-        self.speed = settings.SPEED
+        self.speed = SPEED
         self.reset()
 
     def load_sounds(self):
@@ -62,8 +65,9 @@ class Game:
         self.food = Food(self.random_food, self.bounds, self.cell_size, snake_body=self.snake.body)
         self.special_food = None
         self.score = 0
-        self.speed = settings.SPEED
+        self.speed = SPEED
         self.game_over = False
+        self.frame_iteration = 0
         if settings.SOUND_ON:
             try:
                 pygame.mixer.music.play(-1)
@@ -71,24 +75,55 @@ class Game:
 
     def handle_events(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.running = False
-            else:
-                self.snake.handle_input(event)
+            # else:
+            #     self.snake.handle_input(event)
+
+    def is_collision(self, bounds, pt=None):
+        if pt is None:
+            pt = self.snake.body[0]
+        bx, by, bw, bh = bounds
+
+        if pt[0] < bx or pt[0] >= bx + bw or pt[1] < by or pt[1] >= by + bh:
+            return True
+
+        if [pt[0], pt[1]] in self.snake.body[1:]:
+            return True
+
+        return False
+
+    def get_move(self, action):
+        clock_wise = ["RIGHT", "DOWN", "LEFT", "UP"]
+        idx = clock_wise.index(self.snake.direction)
+
+        if np.array_equal(action, [1, 0, 0]):
+            nxt_idx = idx
+        elif np.array_equal(action, [0, 1, 0]):
+            nxt_idx = (idx + 1) % 4
+        else:
+            nxt_idx = (idx - 1) % 4
+        new_dir = clock_wise[nxt_idx]
+
+        self.snake.change_direction(new_dir)
+        return self.update()
 
     def update(self):
-        if self.game_over:
-            self.running = False 
-            return
+        self.frame_iteration += 1
+        # if self.game_over:
+        #     Game.reset(self)
+        #     self.game_over = False
+        #     return
 
         self.snake.move()
-        
+
+        reward = 0
         if self.special_food:
             if self.special_food.is_expired():
                 self.special_food = None
             elif self.snake.check_eat(self.special_food.position, is_special=True):
-                self.score += 5                 
-                self.speed += 0.5  
+                self.score += 5
+                reward = 20
                 if self.speed > 60: self.speed = 60
                 
                 self.special_food = None
@@ -100,7 +135,7 @@ class Game:
             self.food.position = self.food.random_pos(snake_body=self.snake.body)
 
             self.score += 1
-            self.speed += 0.5
+            reward = 10
             if self.speed > 60: self.speed = 60
             
             if self.special_food is None and random.random() < 0.25:
@@ -108,10 +143,13 @@ class Game:
 
             if settings.SOUND_ON and self.eat_sound:
                 self.eat_sound.play()
-            return
+            return reward, self.game_over, self.score
 
-        if self.snake.check_collision(self.bounds):
+        if self.is_collision(self.bounds) or self.frame_iteration > 500*self.snake.length:
+            reward = -10
             self.trigger_game_over()
+            return reward, self.game_over, self.score
+        return reward, self.game_over, self.score
 
     def trigger_game_over(self):
         if settings.SOUND_ON:
@@ -120,7 +158,6 @@ class Game:
                 self.game_over_sound.set_volume(settings.SOUND_VOLUME)
                 self.game_over_sound.play()
         self.game_over = True
-        self.running = False
 
     def draw_grass(self):
         grass_color_1 = (60, 90, 40)
@@ -151,8 +188,8 @@ class Game:
             font = pygame.font.SysFont("Arial", 30, bold=True)
 
         try:
-            lbl_score = TEXTS[settings.LANGUAGE]["score"]
-            lbl_usn = TEXTS[settings.LANGUAGE]["username"]
+            lbl_score = settings.TEXTS[settings.LANGUAGE]["score"]
+            lbl_usn = settings.TEXTS[settings.LANGUAGE]["username"]
         except:
             lbl_score = "Score"
             lbl_usn = "User"
@@ -179,13 +216,9 @@ class Game:
         pygame.display.flip()
 
     def run(self, txt="Player"):
-        while self.running:
-            self.handle_events()
-            self.update()
-            self.draw(txt)
-            self.clock.tick(self.speed)
+        train(self)
         return self.score
-    
+
 def main(player_name="AI"):
     game = Game()
     score = game.run(player_name)

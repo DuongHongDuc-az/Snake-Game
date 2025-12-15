@@ -8,7 +8,8 @@ class Snake:
         x, y = start_pos
         self.body = [[x, y], [x - cell_size, y], [x - 2*cell_size, y]]
         self.direction = "RIGHT"
-        
+
+        self.length = 1
         self.grow_counter = 0
         self.skin_manager = skin_manager
         self.tongue_interval = 3000
@@ -49,7 +50,8 @@ class Snake:
         self.body.insert(0, new_head)
 
         if self.grow_counter > 0:
-            self.grow_counter -= 1 
+            self.grow_counter -= 1
+            self.length += 1
         else:
             self.body.pop()
             

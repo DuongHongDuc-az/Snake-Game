@@ -1,4 +1,5 @@
 import pygame
+import torch
 import sys
 from snake.app import Game
 from snake.scenes.intro import UI_Manager

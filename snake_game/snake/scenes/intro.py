@@ -12,8 +12,10 @@ try:
 except ImportError:
     print("Warning: snake.app or snake.settings not found. Using mock data.")
     class Game:
-        def run(self, name): return 100
-    class Settings: pass
+        def run(self, name):
+            return 100
+    class Settings:
+        pass
     settings = Settings()
 if not hasattr(settings, 'SOUND_ON'): settings.SOUND_ON = True
 if not hasattr(settings, 'SOUND_VOLUME'): settings.SOUND_VOLUME = 0.5
