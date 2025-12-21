@@ -90,7 +90,7 @@ class Agent:
 
     def get_action(self, state):
         #The more games we have, the less likely random values will fall below the epsilon, and when epsilon becomes negative, we no longer use random move.
-        self.epsilon = 0.01
+        self.epsilon = 0
         final_move = [0, 0, 0]
         if random.random() < self.epsilon:
             move = random.randint(0, 2)
