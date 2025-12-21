@@ -8,7 +8,7 @@ from snake.core.food import Food, FoodManager, SpecialFood
 from snake.skin import SkinManager
 import numpy as np
 import snake.settings as settings
-from snake.rl.train_dqn import train
+from snake.rl.train_dqn import train, play
 
 SPEED = 20
 
@@ -205,7 +205,8 @@ class Game:
         pygame.display.flip()
 
     def run(self, txt="Player"):
-        train(self)
+        # train(self)
+        play(self)
         # while self.running:
         #     self.handle_events()
         #     self.draw(txt)

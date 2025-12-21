@@ -39,3 +39,15 @@ def train(game):
         game.handle_events()
         game.draw("Player")
         game.clock.tick(game.speed)
+
+def play(game):
+    agent = Agent()
+    while game.running:
+        state = agent.get_state(game)
+        move = agent.get_action(state)
+        reward, game_over, score = game.get_move(move)
+        if game_over:
+            game.running = False
+        game.handle_events()
+        game.draw("Player")
+        game.clock.tick(game.speed)
