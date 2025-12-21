@@ -26,6 +26,7 @@ def train(game):
             agent.train_long_memory()
             if score > record:
                 record = score
+            if agent.n_games % 20 == 0:
                 agent.model.save()
 
             print('Game', agent.n_games, 'Score', score, 'Record', record)

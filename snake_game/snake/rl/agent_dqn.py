@@ -1,7 +1,6 @@
 import torch
 import random
 import numpy as np
-from snake.settings import CELL_SIZE
 from enum import Enum
 from collections import namedtuple
 from collections import deque
@@ -15,8 +14,8 @@ class Direction(Enum):
 
 Point = namedtuple("Point", ["x", "y"])
 
-MAX_MEMORY = 200000
-BATCH_SIZE = 2000
+MAX_MEMORY = 100000
+BATCH_SIZE = 1000
 LR = 0.001
 
 class Agent:
@@ -24,28 +23,31 @@ class Agent:
         self.n_games = 0
         self.epsilon = 0 #for randomness
         self.load_completed = False
-        self.gamma = 0.9 #discount rate
+        self.gamma = 0.95 #discount rate
         self.memory = deque(maxlen=MAX_MEMORY)
         self.model = Linear_QNet(11,256,3)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
-        # if self.model.load():
-        #     self.load_completed = True
-        #     print('Load completed')
-        # else:
-        #     print('Load failed')
+        if self.model.load():
+            self.load_completed = True
+            print('Load completed')
+        else:
+            print('Load failed')
 
     def get_state(self, game):
+        CELL_SIZE = game.cell_size
         headx, heady = game.snake.body[0]
         foodx, foody = game.food.position
+        # MAX_DIST = game.play_width + game.play_height
+        # normalized_dist = (abs(foodx - headx) + abs(foody - heady)) / MAX_DIST
         point_l = Point(headx - CELL_SIZE, heady)
         point_r = Point(headx + CELL_SIZE, heady)
         point_u = Point(headx, heady - CELL_SIZE)
         point_d = Point(headx, heady + CELL_SIZE)
 
-        dir_l = game.snake.direction == Direction.LEFT
-        dir_r = game.snake.direction == Direction.RIGHT
-        dir_u = game.snake.direction == Direction.UP
-        dir_d = game.snake.direction == Direction.DOWN
+        dir_l = game.snake.direction == Direction.LEFT.value
+        dir_r = game.snake.direction == Direction.RIGHT.value
+        dir_u = game.snake.direction == Direction.UP.value
+        dir_d = game.snake.direction == Direction.DOWN.value
 
         state = [
             (dir_l and game.is_collision(game.bounds, point_l)) or
@@ -67,8 +69,8 @@ class Agent:
 
             foodx < headx, #food left
             foodx > headx, #food right
-            foody < heady, #foot up
-            foody > heady  #foot down
+            foody < heady, #food up
+            foody > heady #food down
         ]
         return np.array(state, dtype=int)
 
@@ -88,9 +90,9 @@ class Agent:
 
     def get_action(self, state):
         #The more games we have, the less likely random values will fall below the epsilon, and when epsilon becomes negative, we no longer use random move.
-        self.epsilon = 400 - self.n_games if not self.load_completed else 100
+        self.epsilon = 0.01
         final_move = [0, 0, 0]
-        if random.randint(0, 1000) < self.epsilon:
+        if random.random() < self.epsilon:
             move = random.randint(0, 2)
             final_move[move] = 1
         else:

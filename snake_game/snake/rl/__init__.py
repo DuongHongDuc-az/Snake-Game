@@ -10,7 +10,7 @@ import numpy as np
 import snake.settings as settings
 from snake.rl.train_dqn import train
 
-SPEED = 60
+SPEED = 20
 
 class Game:
     def __init__(self, name_color="Basic_purple"):
@@ -19,7 +19,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Snake Game")
         self.header_height = 60 
-        mode_name, grid_cols, grid_rows = settings.GRID_MODES[settings.GRID_INDEX]
+        mode_name, grid_cols, grid_rows = settings.GRID_MODES[3]
         available_w = self.width
         available_h = self.height - self.header_height
         cell_w = available_w // grid_cols
@@ -110,43 +110,32 @@ class Game:
 
     def update(self):
         self.frame_iteration += 1
-        # if self.game_over:
-        #     Game.reset(self)
-        #     self.game_over = False
-        #     return
-
+        old_headx, old_heady = self.snake.body[0]
         self.snake.move()
+        new_headx, new_heady = self.snake.body[0]
+        foodx, foody = self.food.position
+        old_dist = abs(old_headx - foodx) + abs(old_heady - foody)
+        new_dist = abs(new_headx - foodx) + abs(new_heady - foody)
 
         reward = 0
-        if self.special_food:
-            if self.special_food.is_expired():
-                self.special_food = None
-            elif self.snake.check_eat(self.special_food.position, is_special=True):
-                self.score += 5
-                reward = 20
-                if self.speed > 60: self.speed = 60
-                
-                self.special_food = None
-                if settings.SOUND_ON and self.eat_sound:
-                    self.eat_sound.play()
 
+        if (old_dist < new_dist):
+            reward = -0.1
+        else:
+            reward = 0.1
         if self.snake.check_eat(self.food.position, is_special=False):
             self.food.image = random.choice(self.random_food.images)
             self.food.position = self.food.random_pos(snake_body=self.snake.body)
-
             self.score += 1
-            reward = 10
+            reward = 20
             if self.speed > 60: self.speed = 60
-            
-            if self.special_food is None and random.random() < 0.25:
-                self.special_food = SpecialFood(self.random_food, self.bounds, self.cell_size, self.snake.body)
 
             if settings.SOUND_ON and self.eat_sound:
                 self.eat_sound.play()
             return reward, self.game_over, self.score
 
         if self.is_collision(self.bounds) or self.frame_iteration > 600*self.snake.length:
-            reward = -10
+            reward = -15
             self.trigger_game_over()
             return reward, self.game_over, self.score
         return reward, self.game_over, self.score
@@ -217,6 +206,9 @@ class Game:
 
     def run(self, txt="Player"):
         train(self)
+        # while self.running:
+        #     self.handle_events()
+        #     self.draw(txt)
         return self.score
 
 def main(player_name="AI"):
