@@ -1,9 +1,5 @@
 from snake.rl.agent_dqn import Agent
-from snake.rl.helper import plot
 def train(game):
-    plot_scores = []
-    plot_mean_scores = []
-    total_score = 0
     record = 0
     agent = Agent()
     while game.running:
@@ -29,12 +25,7 @@ def train(game):
             if agent.n_games % 20 == 0:
                 agent.model.save()
 
-            print('Game', agent.n_games, 'Score', score, 'Record', record)
-            plot_scores.append(score)
-            total_score += score
-            mean_score = total_score / agent.n_games
-            plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
+            # print('Game', agent.n_games, 'Score', score, 'Record', record)
 
         game.handle_events()
         game.draw("Player")
