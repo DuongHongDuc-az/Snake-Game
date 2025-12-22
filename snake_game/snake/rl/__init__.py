@@ -9,8 +9,34 @@ from snake.skin import SkinManager
 import numpy as np
 import snake.settings as settings
 from snake.rl.train_dqn import train, play
+from collections import deque, namedtuple
 
-SPEED = 20
+SPEED = 20  
+
+Point = namedtuple("Point", ["x", "y"])
+
+def free(game, start, limit=None):
+    snake_set = set(tuple(x) for x in game.snake.body)
+    vst = set([start])
+    q = deque([start])
+    BLOCK_SIZE = game.cell_size
+    bx, by, bw, bh = game.bounds
+
+    free = 0
+
+    while q:
+        p = q.popleft()
+        free += 1
+        if limit and free >= limit:
+            return free
+        for dx, dy in ((BLOCK_SIZE, 0), (-BLOCK_SIZE, 0), (0, BLOCK_SIZE), (0, -BLOCK_SIZE)):
+            np = Point(p.x + dx, p.y + dy)
+            
+            if p.x < bx or p.x >= bx + bw or p.y < by or p.y >= by + bh and np not in snake_set and np not in vst:
+                vst.add(np)
+                q.append(np)
+
+    return free
 
 class Game:
     def __init__(self, name_color="Basic_purple"):
@@ -119,23 +145,28 @@ class Game:
 
         reward = 0
 
-        if (old_dist < new_dist):
+        if old_dist < new_dist:
             reward = -0.1
         else:
             reward = 0.1
+
+        space = free(self, Point(self.snake.body[0][0], self.snake.body[0][1]), limit=self.snake.length*2)
+        if space < self.snake.length:
+            reward -= 0.3
+
         if self.snake.check_eat(self.food.position, is_special=False):
             self.food.image = random.choice(self.random_food.images)
             self.food.position = self.food.random_pos(snake_body=self.snake.body)
             self.score += 1
-            reward = 20
+            reward = 15
             if self.speed > 60: self.speed = 60
 
             if settings.SOUND_ON and self.eat_sound:
                 self.eat_sound.play()
             return reward, self.game_over, self.score
 
-        if self.is_collision(self.bounds) or self.frame_iteration > 600*self.snake.length:
-            reward = -15
+        if self.is_collision(self.bounds) or self.frame_iteration > 100*self.snake.length+1000:
+            reward = -20
             self.trigger_game_over()
             return reward, self.game_over, self.score
         return reward, self.game_over, self.score
