@@ -1,7 +1,5 @@
 # 🐍 Game rắn săn mồi
-![Python 3.8+](img.shields.io)
-![Pygame 2.5.2](img.shields.io)
-![PyTorch 2.6.0](img.shields.io)
+ ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat&logo=python&logoColor=white) ![Pygame](https://img.shields.io/badge/Library-Pygame-orange?style=flat&logo=pygame&logoColor=white) ![PyTorch](https://img.shields.io/badge/AI-PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white)
 ## ✊ Giới thiệu
 Trò chơi này được xây dựng dựa trên game rắn săn mồi cổ điển và tích hợp thêm các tính năng khác để tăng trải nghiệm người chơi. Trò chơi được tạo ra bằng ngôn ngữ Python và sử dụng framework PyGame.
 ## 🎮 Giao diện 
@@ -100,6 +98,7 @@ Trí tuệ nhân tạo: Pytorch
 - Lý Nguyễn Quốc Dũng
 
 - Ngô Trần Phương Anh
+
  **Giảng viên hướng dẫn: thầy Lê Đức Khoan**
  ## 📉 Gnatt Chart
 ![Gnatt Chart](./snake_game/snake/images/Gnatt_Chart.png)
