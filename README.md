@@ -1,10 +1,13 @@
 # 🐍 Game rắn săn mồi
+![Python 3.8+](img.shields.io)
+![Pygame 2.5.2](img.shields.io)
+![PyTorch 2.6.0](img.shields.io)
 ## ✊ Giới thiệu
 Trò chơi này được xây dựng dựa trên game rắn săn mồi cổ điển và tích hợp thêm các tính năng khác để tăng trải nghiệm người chơi. Trò chơi được tạo ra bằng ngôn ngữ Python và sử dụng framework PyGame.
 ## 🎮 Giao diện 
-![Menu](./snake/images/scenes_images/ui_menu.png)
-![Select mode](./snake/images/scenes_images/ui_select_mode.png)
-![Board](./snake/images/scenes_images/ui_board.png)
+![Menu](./snake_game/snake/images/scenes_images/ui_menu.png)
+![Select mode](./snake_game/snake/images/scenes_images/ui_select_mode.png)
+![Board](./snake_game/snake/images/scenes_images/ui_board.png)
 ## ✨ Tính năng nổi bật
 - 👤 🤖 Chế độ chơi đa dạng: người chơi được quyền chọn kích thướt bàn chơi cũng như chế độ tự chơi hoặc chế độ bot chơi.
 - 🖼️  Hình ảnh đẹp mắt: giao diện được thiết kế theo phong cách tết mang lại màu không khí vui vẻ khi chơi, người chơi.còn được quyền chọn giao diện của rắn.
@@ -81,7 +84,7 @@ micromamba activate yourenv
 - Học ngắn hạn (train_short_memory).
 - Lưu bộ [Trạng thái cũ, hành động, reward, trạng thái mới, game_over] vào kho lưu trữ.
 - Nếu màn chơi kết thúc thì học dài hạn (train_long_memory)
-![Mô tả hành động tự chơi của rắn](./snake/images/snake/bot_snake.gif)
+![Mô tả hành động tự chơi của rắn](./snake_game/snake/images/snake/bot_snake.gif)
  ## 💻 Công nghệ sử dụng
 Ngôn ngữ: Python
 Đồ họa, âm thanh: Pygame
@@ -99,4 +102,4 @@ Trí tuệ nhân tạo: Pytorch
 - Ngô Trần Phương Anh
  **Giảng viên hướng dẫn: thầy Lê Đức Khoan**
  ## 📉 Gnatt Chart
-![Gnatt Chart](./snake/images/Gnatt_Chart.png)
+![Gnatt Chart](./snake_game/snake/images/Gnatt_Chart.png)
