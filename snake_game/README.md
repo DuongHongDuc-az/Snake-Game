@@ -7,7 +7,6 @@ Trò chơi nầy được xây dựng dựa trên game rắn săn mồi cổ đi
 - Âm nhạc sống động: Tích hợp âm nhạc khi chơi và ăn thức ăn đem lại trải nghiệm thú vị.
 - Thay đổi ngôn ngữ: Đem lại trải nghiệm tốt nhất cho các tệp người chơi khác nhau.
 ## Cấu trúc thư mục
- * [snake_game/](./snake_game)
   * [snake/](./snake_game/snake)
    * [__init__.py](./snake_game/snake/__init__.py)
    * [settings.py](./snake_game/snake/settings.py)
@@ -25,9 +24,9 @@ Trò chơi nầy được xây dựng dựa trên game rắn săn mồi cổ đi
      * [__init__.py](./snake_game/snake/scenes/__init__.py)
      * [intro.py](./snake_game/snake/scenes/intro.py)
      * [board.py](./snake_game/snake/scenes/board.py)
- * [main.py](./snake_game/main.py)
- * [requirements.txt](./snake_game/requirements.txt)
- * [README.md](./snake_game/README.md)
+  * [main.py](./snake_game/main.py)
+  * [requirements.txt](./snake_game/requirements.txt)
+  * [README.md](./snake_game/README.md)
  ## Cài đặt
   1. Tải mã nguồn
   ```git
