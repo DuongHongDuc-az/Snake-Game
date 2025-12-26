@@ -93,7 +93,7 @@ Trí tuệ nhân tạo: Pytorch.
 **HCMUS-SNAKE - GROUP 6 - 25CTT3**
 - Trương Lý Nhật Duy 
 
-- Dương Hồng Đức - 25120177
+- Dương Hồng Đức
 
 - Nguyễn Gia Huy
 
