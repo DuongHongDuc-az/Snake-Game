@@ -84,9 +84,11 @@ micromamba activate yourenv
 - Nếu màn chơi kết thúc thì học dài hạn (train_long_memory)
 ![Mô tả hành động tự chơi của rắn](./snake_game/snake/images/snake/bot_snake.gif)
  ## 💻 Công nghệ sử dụng
-Ngôn ngữ: Python
-Đồ họa, âm thanh: Pygame
-Trí tuệ nhân tạo: Pytorch
+Ngôn ngữ: Python.
+
+Đồ họa, âm thanh: Pygame.
+
+Trí tuệ nhân tạo: Pytorch.
 ##  👥 Tác giả thực hiện
 **HCMUS-SNAKE - GROUP 6 - 25CTT3**
 - Trương Lý Nhật Duy 
