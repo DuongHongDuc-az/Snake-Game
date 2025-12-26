@@ -7,10 +7,10 @@ Trò chơi này được xây dựng dựa trên game rắn săn mồi cổ đi�
 ![Select mode](./snake_game/snake/images/scenes_images/ui_select_mode.png)
 ![Board](./snake_game/snake/images/scenes_images/ui_board.png)
 ## ✨ Tính năng nổi bật
-- 👤 🤖 Chế độ chơi đa dạng: người chơi được quyền chọn kích thướt bàn chơi cũng như chế độ tự chơi hoặc chế độ bot chơi.
-- 🖼️  Hình ảnh đẹp mắt: giao diện được thiết kế theo phong cách tết mang lại màu không khí vui vẻ khi chơi, người chơi.còn được quyền chọn giao diện của rắn.
+- 👤 🤖 Chế độ chơi đa dạng: người chơi được quyền chọn kích thước bàn chơi cũng như chế độ tự chơi hoặc chế độ bot chơi.
+- 🖼️  Hình ảnh đẹp mắt: giao diện được thiết kế theo phong cách tết mang lại không khí vui vẻ khi chơi, người chơi còn được quyền chọn giao diện của rắn.
 - 🔊  Âm nhạc sống động: tích hợp âm nhạc khi chơi và ăn thức ăn đem lại trải nghiệm thú vị.
-- 🌍 Đa ngôn ngữ: chuyển đổi ngôn ngữ giữa tiếng việt và tiếng anh. Đem lại trải nghiệm tốt nhất cho các tệp người chơi khác nhau.
+- 🌍 Đa ngôn ngữ: chuyển đổi ngôn ngữ giữa tiếng Việt và tiếng Anh. Đem lại trải nghiệm tốt nhất cho các tệp người chơi khác nhau.
 ## 📂 Cấu trúc thư mục
 ```
 snake_game/
